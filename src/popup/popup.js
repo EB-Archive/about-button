@@ -1,6 +1,12 @@
 /* global browser */
 
-document.addEventListener('DOMContentLoaded', () => {
+/** Used to toggle visibility of debug button. @type Boolean */
+let isDebug = true;
+
+/** Used to allow opening of `about:addons` by opening the extension configuration page. @type Boolean */
+let useAddonsShim = true;
+
+document.addEventListener("DOMContentLoaded", () => {
 	browser.storage.onChanged.addListener((changes, areaName) => {
 		switch (areaName) {
 			case "local": {
@@ -19,19 +25,34 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		}
 	});
+	if (isDebug) {
+		document.getElementById("showDisabledButtons").addEventListener("click", () => {
+			browser.storage.local.get({
+				showDisabledButtons: false
+			}).then((settings) => {
+				browser.storage.local.set({
+					showDisabledButtons: !settings.showDisabledButtons
+				});
+			}).catch((error) => {
+				console.error(error);
+			});
+		});
+	} else {
+		document.getElementById("header").setAttribute("style", "display: none !important;");
+	}
 	document.getElementById("open-options").addEventListener("click", () => {
 		browser.runtime.openOptionsPage();
 	});
 	reload();
 });
 
-let use_addons_shim = true;
-
 async function reload() {
-	let status = document.getElementById("status");
-	let table = document.getElementById("main-table");
+	let main = document.getElementById("main");
 
-	table.textContent = "";
+	let status = document.getElementById("status");
+	let content = document.createElement("div");
+	content.setAttribute("id", "main-content");
+
 	status.textContent = "";
 
 	browser.runtime.sendMessage({
@@ -56,32 +77,32 @@ async function reload() {
 			status.appendChild(document.createTextNode("Greyed-out buttons have been hidden"));
 		}
 		pages.forEach((page) => {
-			if (!page[2] && (page[0] !== "about:addons" || (page[0] === "about:addons" && !use_addons_shim)) && !showDisabledButtons) return;
-
-			let tr = document.createElement("tr");
-			let td = document.createElement("td");
+			if ((page[2] && !showDisabledButtons && page[0] !== "about:addons") || (page[0] === "about:addons" && !useAddonsShim)) return;
 
 			let button = document.createElement("button");
 			let img = generateImg(page[1]);
-			button.setAttribute("type", button);
-			if (!page[2] && (page[0] !== "about:addons" || (page[0] === "about:addons" && !use_addons_shim)))
+			button.setAttribute("type", "button");
+			if ((page[2] && page[0] !== "about:addons") || (page[0] === "about:addons" && !useAddonsShim))
 				button.setAttribute("disabled", true);
 			button.appendChild(img);
 			button.appendChild(document.createTextNode(page[0]));
 			button.addEventListener("click", (evt) => {
-				if (page[2]) {
+				if (!page[2]) {
 					browser.tabs.create({url: page[0]});
-				} else if (page[0] === "about:addons" && use_addons_shim) {
+				} else if (page[0] === "about:addons" && useAddonsShim) {
 					browser.runtime.openOptionsPage();
 				} else {
 					browser.tabs.create({url: "/redirect/redirect.html?dest=" + page[0]});
 				}
 			});
 
-			td.appendChild(button);
-			tr.appendChild(td);
-			table.appendChild(tr);
+			console.log("button:", button);
+			console.log("button:", button.childNodes);
+			content.appendChild(button);
 		});
+	}).then(async () => {
+		main.textContent = "";
+		main.appendChild(content);
 	}).catch(async (error) => {
 		console.warn(error);
 		status.appendChild(document.createTextNode(error));
@@ -89,18 +110,21 @@ async function reload() {
 }
 
 /**
- * @param {String} path
+ * Generate the &lt;img&gt; tag for the specified image.
+ *
+ * @param {String} image
  * @returns {HTMLImgElement}
  */
-function generateImg(path) {
+function generateImg(image) {
 	let img = document.createElement("img");
 	img.setAttribute("class", "icon");
 	img.setAttribute("width", "16px");
-	if (path && path.length !== 0) {
-//		img.setAttribute("src", "/icons/SVG/" + path + ".svg");
-		img.setAttribute("src", "/icons/256/" + path + ".png");
+	if (image && image.length !== 0) {
+//		img.setAttribute("src", "/icons/SVG/" + image + ".svg");
+		img.setAttribute("src", "/icons/256/" + image + ".png");
 	} else {
 		img.setAttribute("class", "icon missing");
 	}
+	console.log("image:", img);
 	return img;
 }

@@ -27,8 +27,7 @@ if (dest) {
 	} catch (e) {
 		error = e;
 		window.addEventListener("load", () => {
-			let element = document.getElementById("body");
-			element.appendChild(document.createTextNode(error));
+			document.body.appendChild(document.createTextNode(error));
 		});
 	}
 }

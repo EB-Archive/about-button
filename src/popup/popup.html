@@ -8,9 +8,13 @@
 		<script src="popup.js"></script>
 	</head>
 	<body>
-		<!--<div id="header"></div>-->
+		<!-- Debug button, visibility controlled by variable `isDebug` in `popup.js` -->
+		<div id="header"><button id="showDisabledButtons">Toggle greyed-out
+			about: pages visibility</button></div>
+
+		<!-- Content -->
 		<main id="main">
-			<table id="main-table"></table>
+			<div id="main-content"></div>
 		</main>
 		<div id="footer">
 			<div id="status"></div>

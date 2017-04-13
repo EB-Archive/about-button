@@ -1,42 +1,45 @@
 /* global browser */
 const ABOUT_PAGES = [
-	["about:",					"firefox",			false],
-	["about:about",				"cog",				false],
-	["about:accounts",			"user",				false],
-	["about:addons",			"plugin",			false],
-	["about:blank",				"page-white",		true],
-	["about:buildconfig",		"building",			false],
-	["about:cache",				"drive",			false],
-	["about:checkerboard",		"chart-line",		false],
-	["about:config",			"wrench",			false],
-	["about:crashes",			"error",			false],
-	["about:credits",			"vcard",			false],
-	["about:debugging",			"script-lightning",	false],
-	["about:devtools-toolbox",	"wrench-orange",	false],
-	["about:downloads",			"drive-down",		false],
-	["about:healthreport",		"heart",			false],
-	["about:home",				"house",			true],
-	["about:license",			"report",			true],
-	["about:logo",				"picture-empty",	true],
-	["about:memory",			"memory",			false],
-	["about:mozilla",			"world",			false],
-	["about:networking",		"world-network",	false],
-	["about:newtab",			"tab",				false],
-	["about:performance",		"server-lightning",	false],
-	["about:plugins",			"plugin",			false],
-	["about:preferences",		"options-wrench",	false],
-	["about:privatebrowsing",	"lock",				false],
-	["about:profiles",			"group",			false],
-	["about:rights",			"receipt",			true],
-	["about:robots",			"user-red",			false],
-	["about:serviceworkers",	"script-gear",		false],
-	["about:sessionrestore",	"lightning",		false],
-	["about:support",			"help",				false],
-	["about:sync-log",			"page-refresh",		false],
-	["about:sync-tabs",			"tabs-refresh",		false],
-	["about:telemetry",			"chart-curve",		false],
-	["about:webrtc",			"phone",			false],
-	["about:welcomeback",		"emoticon-smile",	false]
+	["about:",					"firefox",			true],
+	["about:about",				"cog",				true],
+	["about:accounts",			"user",				true],
+	["about:addons",			"plugin",			true],
+	["about:blank",				"page-white",		false],
+	["about:buildconfig",		"building",			true],
+	["about:cache",				"drive",			true],
+	["about:checkerboard",		"chart-line",		true],
+	["about:config",			"wrench",			true],
+	["about:crashes",			"error",			true],
+	["about:credits",			"vcard",			true],
+	["about:debugging",			"script-lightning",	true],
+	["about:devtools-toolbox",	"wrench-orange",	true],
+	["about:downloads",			"drive-down",		true],
+	["about:healthreport",		"heart",			true],
+	["about:home",				"house",			false],
+	["about:license",			"report",			false],
+	["about:logo",				"picture-empty",	false],
+	["about:memory",			"memory",			true],
+	["about:mozilla",			"world",			true],
+	["about:networking",		"world-network",	true],
+	["about:newtab",			"tab",				true],
+	["about:performance",		"server-lightning",	true],
+	["about:plugins",			"plugin",			true],
+	["about:preferences",		"options-wrench",	true],
+	["about:privatebrowsing",	"lock",				true],
+	["about:profiles",			"group",			true],
+	["about:rights",			"receipt",			false],
+	["about:robots",			"user-red",			true],
+	["about:serviceworkers",	"script-gear",		true],
+	["about:sessionrestore",	"lightning",		true],
+	["about:support",			"help",				true],
+	["about:sync-log",			"page-refresh",		true],
+	["about:sync-tabs",			"tabs-refresh",		true],
+	["about:telemetry",			"chart-curve",		true],
+	["about:webrtc",			"phone",			true],
+	["about:welcomeback",		"emoticon-smile",	true]
+//	It has been confirmed that the following can't be used
+//	by other addons to inject malicious code into this extension:
+//	,["<div id=\"stuff\">inADiv</div>","phone.png\" style=\"background-color: red;\" data-fileext=\"", false]
 ];
 
 /**
@@ -49,7 +52,7 @@ function registerPage(message, resolve, privileged) {
 	let data = [];
 	data[0] = String(message.page);
 	data[1] = String(message.icon !== undefined ? message.icon : "");
-	data[2] = !Boolean(message.privileged);
+	data[2] = Boolean(message.privileged);
 
 	let isNew = true;
 	if (privileged) {

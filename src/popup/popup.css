@@ -1,66 +1,86 @@
+/* +----------+ */
+/* | Elements | */
+/* +----------+ */
 
 html, body {
-	overflow-x: hidden !important;
+	overflow-x: hidden;
 }
 
 body {
-	margin: 4px !important;
+	margin: 4px;
 }
 
 button {
-	width: 100% !important;
-	text-align: left !important;
-	white-space: nowrap !important;
-}
-
-#showDisabledButtons {
-	text-align: center !important;
-	height: calc(100% + 8px) !important;
-	overflow-x: visible !important;
-	white-space: pre-line !important;
+	width: 100%;
+	text-align: left;
+	white-space: nowrap;
 }
 
 button:disabled {
-	background-color: #CCC !important;
-	border: solid !important;
-	border-width: 1px !important;
-	border-color: #777 !important;
+	background-color: #CCC;
+	border: solid;
+	border-width: 1px;
+	border-color: #777;
 }
 
-#main-table {
-	width: 100% !important;
-	margin-right: 16px !important;
-	border-spacing: 8px !important;
-}
-
-a {
-	text-decoration: none !important;
-	color: black !important;
-}
+/* +---------+ */
+/* | Classes | */
+/* +---------+ */
 
 .icon {
-	vertical-align: middle !important;
-	margin-right: 8px !important;
+	background-color: green;
+	border: solid;
+	border-color: red;
+	border-width: 1px;
+	vertical-align: middle;
+	margin-right: 8px;
 }
 
 .icon.missing {
-	margin-right: 24px !important;
+	margin-right: 24px;
 }
 
+/* +-----+ */
+/* | IDs | */
+/* +-----+ */
+
 #header {
-	margin: 4px !important;
-	padding-bottom: 4px !important;
+	margin: 4px;
+	padding-bottom: 4px;
 }
 
 #footer {
-	margin-top: 0px !important;
-	margin-left: 4px !important;
-	margin-right: 4px !important;
-	margin-bottom: 4px !important;
+	margin-top: 0px;
+	margin-left: 4px;
+	margin-right: 4px;
+	margin-bottom: 4px;
 }
 
 #status {
-	margin: 2px !important;
-	margin-bottom: 4px !important;
-	white-space: normal !important;
+	margin: 2px;
+	margin-bottom: 4px;
+	white-space: normal;
+}
+
+#showDisabledButtons {
+	text-align: center;
+	height: calc(100% + 8px);
+	overflow-x: visible;
+	white-space: pre-line;
+}
+
+#main {
+	margin-right: 16px !important;
+}
+
+#main-content {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	margin: 4px;
+	border-spacing: 8px;
+}
+
+#main-content > button {
+	margin: 4px;
 }
