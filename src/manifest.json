@@ -1,0 +1,49 @@
+{
+	"applications": {
+		"gecko": {
+			"id": "about-button@exe-boss",
+			"strict_min_version": "52.0"
+		}
+	},
+
+	"manifest_version": 2,
+	"name": "Firefox about:about Button",
+	"version": "0.1.0b1",
+	"author": "ExE Boss",
+	"description": "A Firefox exclusive WebExtension to quickly open about:* pages",
+
+	"permissions": [
+		"storage"
+	],
+	"icons": {
+		"16": "icons/16/cog.png",
+		"24": "icons/24/cog.png",
+		"32": "icons/32/cog.png",
+		"48": "icons/48/cog.png",
+		"64": "icons/64/cog.png",
+		"72": "icons/72/cog.png",
+		"96": "icons/96/cog.png",
+		"128":"icons/128/cog.png",
+		"256":"icons/256/cog.png"
+	},
+
+	"background": {
+		"scripts": ["background.js"]
+	},
+	"browser_action": {
+		"browser_style": true,
+		"default_icon": {
+			"16": "icons/16/cog.png",
+			"24": "icons/24/cog.png",
+			"32": "icons/32/cog.png",
+			"48": "icons/48/cog.png",
+			"64": "icons/64/cog.png",
+			"72": "icons/72/cog.png",
+			"96": "icons/96/cog.png",
+			"128":"icons/128/cog.png",
+			"256":"icons/256/cog.png"
+		},
+		"default_title": "about:about",
+		"default_popup": "popup/popup.html"
+	}
+}

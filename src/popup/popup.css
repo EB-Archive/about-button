@@ -1,0 +1,41 @@
+
+html, body {
+	overflow-x: hidden !important;
+}
+
+body {
+	margin: 4px !important;
+}
+
+button {
+	width: 100% !important;
+	text-align: left !important;
+	white-space: nowrap;
+}
+
+button:disabled {
+	background-color: #CCC !important;
+	border: solid !important;
+	border-width: 1px !important;
+	border-color: #777 !important;
+}
+
+#main-table {
+	width: 100% !important;
+	margin-right: 16px !important;
+	border-spacing: 8px !important;
+}
+
+a {
+	text-decoration: none !important;
+	color: black !important;
+}
+
+.icon {
+	vertical-align: middle !important;
+	margin-right: 8px !important;
+}
+
+.icon.missing {
+	margin-right: 24px !important;
+}
