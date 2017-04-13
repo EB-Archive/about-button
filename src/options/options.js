@@ -1,13 +1,48 @@
 /* global browser */
 
-function restore_options() {
+/** @type HTMLInputElement */
+let element_showDisabledButtons;
+
+function reload() {
 	browser.storage.local.get({
-		showDisabledButtons: true
+		showDisabledButtons: false
 	}).then((settings) => {
-		document.getElementById("showDisabledButtons").checked = settings.showDisabledButtons;
+		element_showDisabledButtons.checked = settings.showDisabledButtons;
 	}).catch((error) => {
-		document.getElementById("showDisabledButtons").checked = true;
+		element_showDisabledButtons.checked = false;
 	});
 }
 
-document.addEventListener('DOMContentLoaded', () => {restore_options()});
+function saveOptions() {
+	browser.storage.local.set({
+		showDisabledButtons: element_showDisabledButtons.checked
+	}).catch((error) => {
+		console.error("Could not save options");
+		console.error(error);
+	});
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+	element_showDisabledButtons = document.getElementById("showDisabledButtons");
+	for(let inputElement of document.getElementsByTagName("input")) {
+		let save = inputElement.hasAttribute("data-save") ? Boolean(inputElement.getAttribute("data-save")) : true;
+		if (!save) continue;
+		inputElement.addEventListener("input", () => {saveOptions();});
+	}
+	for(let inputElement of document.getElementsByTagName("button")) {
+		let save = inputElement.hasAttribute("data-save") ? Boolean(inputElement.getAttribute("data-save")) : true;
+		if (!save) continue;
+		inputElement.addEventListener("click", () => {saveOptions();});
+	}
+	browser.storage.onChanged.addListener((changes, areaName) => {
+		switch (areaName) {
+			case "local": {
+				if (changes.showDisabledButtons !== undefined) {
+					reload();
+				}
+				break;
+			}
+		}
+	});
+	reload();
+});

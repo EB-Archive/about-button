@@ -8,7 +8,7 @@
 
 	"manifest_version": 2,
 	"name": "Firefox about:about Button",
-	"version": "0.1.0b1",
+	"version": "0.1.1",
 	"author": "ExE Boss",
 	"description": "A Firefox exclusive WebExtension to quickly open about:* pages",
 
@@ -30,8 +30,14 @@
 	"background": {
 		"scripts": ["background.js"]
 	},
+	"options_ui": {
+		"page": "options/options.html",
+		"chrome_style": true
+	},
 	"browser_action": {
 		"browser_style": true,
+		"default_title": "about:about",
+		"default_popup": "popup/popup.html",
 		"default_icon": {
 			"16": "icons/16/cog.png",
 			"24": "icons/24/cog.png",
@@ -42,8 +48,6 @@
 			"96": "icons/96/cog.png",
 			"128":"icons/128/cog.png",
 			"256":"icons/256/cog.png"
-		},
-		"default_title": "about:about",
-		"default_popup": "popup/popup.html"
+		}
 	}
 }

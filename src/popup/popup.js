@@ -11,25 +11,38 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		}
 	});
+	browser.runtime.onMessage.addListener((message, sender, resolve) => {
+		let messageType = String(message.type);
+		switch (messageType) {
+			case "pagesChanged": {
+				reload();
+			}
+		}
+	});
+	document.getElementById("open-options").addEventListener("click", () => {
+		browser.runtime.openOptionsPage();
+	});
 	reload();
 });
 
+let use_addons_shim = true;
+
 async function reload() {
-	let footer = document.getElementById("footer");
+	let status = document.getElementById("status");
 	let table = document.getElementById("main-table");
 
-	table.innerHTML = "";
-	footer.innerHTML = "";
+	table.textContent = "";
+	status.textContent = "";
 
 	browser.runtime.sendMessage({
 		type: "getPages"
 	}).then(async (response) => {
 		response.showDisabledButtons = await browser.storage.local.get({
-			showDisabledButtons: true
+			showDisabledButtons: false
 		}).then((settings) => {
 			return settings.showDisabledButtons;
 		}).catch((error) => {
-			console.error(error);
+			console.warn(error);
 			return true;
 		});
 		return response;
@@ -40,35 +53,38 @@ async function reload() {
 		if (showDisabledButtons === undefined)
 			showDisabledButtons = true;
 		if (!showDisabledButtons) {
-			footer.appendChild(document.createTextNode("Disabled buttons have been hidden"));
+			status.appendChild(document.createTextNode("Greyed-out buttons have been hidden"));
 		}
 		pages.forEach((page) => {
+			if (!page[2] && (page[0] !== "about:addons" || (page[0] === "about:addons" && !use_addons_shim)) && !showDisabledButtons) return;
+
 			let tr = document.createElement("tr");
 			let td = document.createElement("td");
 
 			let button = document.createElement("button");
 			let img = generateImg(page[1]);
 			button.setAttribute("type", button);
-			if (!page[2])
+			if (!page[2] && (page[0] !== "about:addons" || (page[0] === "about:addons" && !use_addons_shim)))
 				button.setAttribute("disabled", true);
 			button.appendChild(img);
 			button.appendChild(document.createTextNode(page[0]));
 			button.addEventListener("click", (evt) => {
 				if (page[2]) {
 					browser.tabs.create({url: page[0]});
+				} else if (page[0] === "about:addons" && use_addons_shim) {
+					browser.runtime.openOptionsPage();
 				} else {
 					browser.tabs.create({url: "/redirect/redirect.html?dest=" + page[0]});
 				}
 			});
 
-			if (page[2] || (!page[2] && showDisabledButtons)) {
-				td.appendChild(button);
-				tr.appendChild(td);
-				table.appendChild(tr);
-			}
+			td.appendChild(button);
+			tr.appendChild(td);
+			table.appendChild(tr);
 		});
 	}).catch(async (error) => {
-		console.error(error);
+		console.warn(error);
+		status.appendChild(document.createTextNode(error));
 	});
 }
 

@@ -10,7 +10,14 @@ body {
 button {
 	width: 100% !important;
 	text-align: left !important;
-	white-space: nowrap;
+	white-space: nowrap !important;
+}
+
+#showDisabledButtons {
+	text-align: center !important;
+	height: calc(100% + 8px) !important;
+	overflow-x: visible !important;
+	white-space: pre-line !important;
 }
 
 button:disabled {
@@ -38,4 +45,22 @@ a {
 
 .icon.missing {
 	margin-right: 24px !important;
+}
+
+#header {
+	margin: 4px !important;
+	padding-bottom: 4px !important;
+}
+
+#footer {
+	margin-top: 0px !important;
+	margin-left: 4px !important;
+	margin-right: 4px !important;
+	margin-bottom: 4px !important;
+}
+
+#status {
+	margin: 2px !important;
+	margin-bottom: 4px !important;
+	white-space: normal !important;
 }

@@ -76,6 +76,11 @@ function registerPage(message, resolve, privileged) {
 				numeric: true
 			})
 		});
+		browser.runtime.sendMessage({
+			type: "pagesChanged"
+		}).catch((error) => {
+			console.error(error);
+		})
 	}
 	resolve(isNew);
 	return;
@@ -86,13 +91,11 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 	switch (messageType) {
 		case "registerPage": {
 			registerPage(message, resolve, true);
-			break;
+			return;
 		} case "getPages": {
 			resolve({pages: ABOUT_PAGES.slice()});
 			return;
-		} default: {
-			throw new Error("Invalid message type: " + messageType);
-		}
+		} default: {}
 	}
 });
 
@@ -103,7 +106,7 @@ browser.runtime.onMessageExternal.addListener((message, sender, resolve) => {
 			registerPage(message, resolve, false);
 			break;
 		} default: {
-			throw new Error("Invalid message type: " + messageType);
+			throw "Invalid message type: " + messageType;
 		}
 	}
 });
