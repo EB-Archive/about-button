@@ -49,19 +49,6 @@ button:disabled {
 	padding-bottom: 4px;
 }
 
-#footer {
-	margin-top: 0px;
-	margin-left: 4px;
-	margin-right: 4px;
-	margin-bottom: 4px;
-}
-
-#status {
-	margin: 2px;
-	margin-bottom: 4px;
-	white-space: normal;
-}
-
 #showDisabledButtons {
 	text-align: center;
 	height: calc(100% + 8px);
@@ -83,4 +70,17 @@ button:disabled {
 
 #main-content > button {
 	margin: 4px;
+}
+
+#footer {
+	margin-top: 0px;
+	margin-left: 4px;
+	margin-right: 4px;
+	margin-bottom: 4px;
+}
+
+#status {
+	margin: 2px;
+	margin-bottom: 4px;
+	white-space: normal;
 }
