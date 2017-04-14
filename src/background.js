@@ -1,51 +1,64 @@
 /* global browser */
-const ABOUT_PAGES = [
-	["about:",					"firefox",			true],
-	["about:about",				"cog",				true],
-	["about:accounts",			"user",				true],
-	["about:addons",			"plugin",			true],
-	["about:blank",				"page-white",		false],
-	["about:buildconfig",		"building",			true],
-	["about:cache",				"drive",			true],
-	["about:checkerboard",		"chart-line",		true],
-	["about:config",			"wrench",			true],
-	["about:crashes",			"error",			true],
-	["about:credits",			"vcard",			true],
-	["about:debugging",			"script-lightning",	true],
-	["about:devtools-toolbox",	"wrench-orange",	true],
-	["about:downloads",			"drive-down",		true],
-	["about:healthreport",		"heart",			true],
-	["about:home",				"house",			false],
-	["about:license",			"report",			false],
-	["about:logo",				"picture-empty",	false],
-	["about:memory",			"memory",			true],
-	["about:mozilla",			"world",			true],
-	["about:networking",		"world-network",	true],
-	["about:newtab",			"tab",				true],
-	["about:performance",		"server-lightning",	true],
-	["about:plugins",			"plugin",			true],
-	["about:preferences",		"options-wrench",	true],
-	["about:privatebrowsing",	"lock",				true],
-	["about:profiles",			"group",			true],
-	["about:rights",			"receipt",			false],
-	["about:robots",			"user-red",			true],
-	["about:serviceworkers",	"script-gear",		true],
-	["about:sessionrestore",	"lightning",		true],
-	["about:support",			"help",				true],
-	["about:sync-log",			"page-refresh",		true],
-	["about:sync-tabs",			"tabs-refresh",		true],
-	["about:telemetry",			"chart-curve",		true],
-	["about:webrtc",			"phone",			true],
-	["about:welcomeback",		"emoticon-smile",	true]
+const ABOUT_PAGES = [];
+initPage("about:",					"firefox",			true);
+initPage("about:about",				"cog",				true);
+initPage("about:accounts",			"user",				true);
+initPage("about:addons",			"plugin",			true);
+initPage("about:blank",				"page-white",		false);
+initPage("about:buildconfig",		"building",			true);
+initPage("about:cache",				"drive",			true);
+initPage("about:checkerboard",		"chart-line",		true);
+initPage("about:config",			"wrench",			true);
+initPage("about:crashes",			"error",			true);
+initPage("about:credits",			"vcard",			true);
+initPage("about:debugging",			"script-lightning",	true);
+initPage("about:devtools-toolbox",	"wrench-orange",	true);
+initPage("about:downloads",			"drive-down",		true);
+initPage("about:healthreport",		"heart",			true);
+initPage("about:home",				"house",			false);
+initPage("about:license",			"report",			false);
+initPage("about:logo",				"picture-empty",	false);
+initPage("about:memory",			"memory",			true);
+initPage("about:mozilla",			"world",			true);
+initPage("about:networking",		"world-network",	true);
+initPage("about:newtab",			"tab",				true);
+initPage("about:performance",		"server-lightning",	true);
+initPage("about:plugins",			"plugin",			true);
+initPage("about:preferences",		"options-wrench",	true);
+initPage("about:privatebrowsing",	"lock",				true);
+initPage("about:profiles",			"group",			true);
+initPage("about:rights",			"receipt",			false);
+initPage("about:robots",			"user-red",			true);
+initPage("about:serviceworkers",	"script-gear",		true);
+initPage("about:sessionrestore",	"lightning",		true);
+initPage("about:support",			"help",				true);
+initPage("about:sync-log",			"page-refresh",		true);
+initPage("about:sync-tabs",			"tabs-refresh",		true);
+initPage("about:telemetry",			"chart-curve",		true);
+initPage("about:webrtc",			"phone",			true);
+initPage("about:welcomeback",		"emoticon-smile",	true);
 //	It has been confirmed that the following can't be used
 //	by other addons to inject malicious code into this extension:
-//	,["<div id=\"stuff\">inADiv</div>","phone.png\" style=\"background-color: red;\" data-fileext=\"", false]
-];
+//initPage("<div id=\"stuff\">inADiv</div>", "phone.png\" style=\"background-color: red;\" data-fileext=\"", false);
 
 /**
- * @param {type} message
- * @param {type} resolve
- * @param {type} privileged
+ * @param {String} page
+ * @param {String} icon
+ * @param {Boolean} privileged
+ * @returns {undefined}
+ */
+function initPage(page, icon, privileged) {
+	registerPage({page: page, icon: icon, privileged: privileged}, (registered) => {
+		if (!registered) {
+			console.warn("[Firefox about:about Button]", "Failed to register page:", page);
+		}
+	}, true);
+}
+
+/**
+ * @param {Object} message
+ * @param {Function} resolve
+ * @param {Boolean} privileged
  * @returns {undefined}
  */
 function registerPage(message, resolve, privileged) {
@@ -82,10 +95,12 @@ function registerPage(message, resolve, privileged) {
 		browser.runtime.sendMessage({
 			type: "pagesChanged"
 		}).catch((error) => {
-			console.error(error);
-		})
+			if (!error.message.startsWith("Could not establish connection. Receiving end does not exist."))
+				console.error(error);
+		});
 	}
-	resolve(isNew);
+	if (typeof resolve === "function")
+		resolve(isNew);
 	return;
 }
 

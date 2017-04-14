@@ -28,10 +28,6 @@ button:disabled {
 /* +---------+ */
 
 .icon {
-	background-color: green;
-	border: solid;
-	border-color: red;
-	border-width: 1px;
 	vertical-align: middle;
 	margin-right: 8px;
 }

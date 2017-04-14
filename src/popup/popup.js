@@ -1,7 +1,7 @@
 /* global browser */
 
 /** Used to toggle visibility of debug button. @type Boolean */
-let isDebug = true;
+let isDebug = false;
 
 /** Used to allow opening of `about:addons` by opening the extension configuration page. @type Boolean */
 let useAddonsShim = true;
@@ -95,9 +95,6 @@ async function reload() {
 					browser.tabs.create({url: "/redirect/redirect.html?dest=" + page[0]});
 				}
 			});
-
-			console.log("button:", button);
-			console.log("button:", button.childNodes);
 			content.appendChild(button);
 		});
 	}).then(async () => {
@@ -125,6 +122,5 @@ function generateImg(image) {
 	} else {
 		img.setAttribute("class", "icon missing");
 	}
-	console.log("image:", img);
 	return img;
 }
