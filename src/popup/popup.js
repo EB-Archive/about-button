@@ -3,8 +3,16 @@
 /** Used to toggle visibility of debug button. @type Boolean */
 let isDebug = false;
 
-/** Used to allow opening of `about:addons` by opening the extension configuration page. @type Boolean */
-let useAddonsShim = true;
+/**
+ * Used to allow opening of:
+ * <ul>
+ * <li>`about:addons` by opening the extension configuration.
+ * <li>`about:credits` by opening <a href="https://www.mozilla.org/credits">https://www.mozilla.org/credits</a>.
+ * </ul>
+ * @type Boolean
+ */
+let usePagesShim = true;
+let pagesShims = ["about:addons", "about:credits"];
 
 document.addEventListener("DOMContentLoaded", () => {
 	browser.storage.onChanged.addListener((changes, areaName) => {
@@ -46,6 +54,26 @@ document.addEventListener("DOMContentLoaded", () => {
 	reload();
 });
 
+/**
+ * Checks if the suppplied page is shimmed.
+ *
+ * @param {String} page The page to check.
+ * @returns {Boolean} If the page is shimmed.
+ */
+function isShimmed(page) {
+	if (usePagesShim) {
+		for (let p of pagesShims) {
+			if (page === p) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/**
+ * (Re-)load the current popup.
+ */
 async function reload() {
 	let main = document.getElementById("main");
 
@@ -77,20 +105,26 @@ async function reload() {
 			status.appendChild(document.createTextNode("Greyed-out buttons have been hidden"));
 		}
 		pages.forEach((page) => {
-			if ((page[2] && !showDisabledButtons && page[0] !== "about:addons") || (page[0] === "about:addons" && !useAddonsShim)) return;
+			let disabled = false;
+			if (page[2] && !isShimmed(page[0])) {
+				disabled = true;
+				if (!showDisabledButtons)
+					return;
+			}
 
 			let button = document.createElement("button");
 			let img = generateImg(page[1]);
 			button.setAttribute("type", "button");
-			if ((page[2] && page[0] !== "about:addons") || (page[0] === "about:addons" && !useAddonsShim))
-				button.setAttribute("disabled", true);
+			if (disabled) button.setAttribute("disabled", true);
 			button.appendChild(img);
 			button.appendChild(document.createTextNode(page[0]));
 			button.addEventListener("click", (evt) => {
 				if (!page[2]) {
 					browser.tabs.create({url: page[0]});
-				} else if (page[0] === "about:addons" && useAddonsShim) {
+				} else if (usePagesShim && page[0] === "about:addons") {
 					browser.runtime.openOptionsPage();
+				} else if (usePagesShim && page[0] === "about:credits") {
+					browser.tabs.create({url: "https://www.mozilla.org/credits/"});
 				} else {
 					browser.tabs.create({url: "/redirect/redirect.html?dest=" + page[0]});
 				}
