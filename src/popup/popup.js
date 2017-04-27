@@ -163,13 +163,13 @@ async function reload() {
  */
 function generateImg(image) {
 	let img = document.createElement("img");
-	img.setAttribute("class", "icon");
-	img.setAttribute("width", "16px");
+	img.setAttribute("class",	"icon");
+	img.setAttribute("width",	"16px");
 	if (image && image.length !== 0) {
-//		img.setAttribute("src", "/icons/SVG/" + image + ".svg");
-		img.setAttribute("src", "/icons/256/" + image + ".png");
+//		img.setAttribute("src",	"/icons/SVG/" + image + ".svg");
+		img.setAttribute("src",	"/icons/256/" + image + ".png");
 	} else {
-		img.setAttribute("class", "icon missing");
+		img.setAttribute("class",	"icon missing");
 	}
 	return img;
 }
