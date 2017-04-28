@@ -89,7 +89,7 @@ function isShimmed(page) {
 /**
  * (Re-)load the current popup.
  */
-async function reload() {
+function reload() {
 	let main = document.getElementById("main");
 
 	let status = document.getElementById("status");
@@ -100,17 +100,7 @@ async function reload() {
 
 	browser.runtime.sendMessage({
 		type: "getPages"
-	}).then(async (response) => {
-		response.showDisabledButtons = await browser.storage.local.get({
-			showDisabledButtons: false
-		}).then((settings) => {
-			return settings.showDisabledButtons;
-		}).catch((error) => {
-			console.warn(error);
-			return true;
-		});
-		return response;
-	}).then(async (response) => {
+	}).then(response => {
 		let pages = response.pages;
 		let showDisabledButtons = response.showDisabledButtons;
 
@@ -119,7 +109,7 @@ async function reload() {
 		if (!showDisabledButtons) {
 			status.appendChild(document.createTextNode("Greyed-out buttons have been hidden"));
 		}
-		pages.forEach((page) => {
+		pages.forEach(page => {
 			let disabled = false;
 			if (page[2] && !isShimmed(page[0])) {
 				disabled = true;
@@ -133,7 +123,7 @@ async function reload() {
 			if (disabled) button.setAttribute("disabled", true);
 			button.appendChild(img);
 			button.appendChild(document.createTextNode(page[0]));
-			button.addEventListener("click", (evt) => {
+			button.addEventListener("click", evt => {
 				if (!page[2]) {
 					browser.tabs.create({url: page[0]});
 				} else if (usePagesShim && page[0] === "about:addons") {
@@ -146,10 +136,10 @@ async function reload() {
 			});
 			content.appendChild(button);
 		});
-	}).then(async () => {
+	}).then(() => {
 		main.textContent = "";
 		main.appendChild(content);
-	}).catch(async (error) => {
+	}).catch(error => {
 		console.warn(error);
 		status.appendChild(document.createTextNode(error));
 	});

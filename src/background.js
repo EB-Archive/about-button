@@ -126,8 +126,19 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 			registerPage(message, resolve, true);
 			return;
 		} case "getPages": {
-			resolve({pages: ABOUT_PAGES.slice()});
-			return;
+			return browser.storage.local.get({
+				showDisabledButtons: false
+			}).then((settings) => {
+				return settings.showDisabledButtons;
+			}).catch((error) => {
+				console.warn(error);
+				return true;
+			}).then(showDisabledButtons => {
+				return {
+					pages: ABOUT_PAGES.slice(),
+					showDisabledButtons: showDisabledButtons
+				};
+			});
 		} default: {}
 	}
 });
