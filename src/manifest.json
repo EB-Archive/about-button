@@ -7,46 +7,47 @@
 	},
 
 	"manifest_version": 2,
-	"name": "Firefox about:about Button",
-	"version": "0.1.5",
-	"author": "ExE Boss",
+	"name":	"Firefox about:about Button",
+	"version":	"0.1.6",
+	"author":	"ExE Boss",
+	"description":	"A Firefox exclusive WebExtension to quickly open about:* pages.",
 
 	"permissions": [
 		"storage"
 	],
 	"icons": {
-		"16": "icons/16/cog.png",
-		"24": "icons/24/cog.png",
-		"32": "icons/32/cog.png",
-		"48": "icons/48/cog.png",
-		"64": "icons/64/cog.png",
-		"72": "icons/72/cog.png",
-		"96": "icons/96/cog.png",
-		"128":"icons/128/cog.png",
-		"256":"icons/256/cog.png"
+		"16":	"icons/16/cog.png",
+		"24":	"icons/24/cog.png",
+		"32":	"icons/32/cog.png",
+		"48":	"icons/48/cog.png",
+		"64":	"icons/64/cog.png",
+		"72":	"icons/72/cog.png",
+		"96":	"icons/96/cog.png",
+		"128":	"icons/128/cog.png",
+		"256":	"icons/256/cog.png"
 	},
 
 	"background": {
 		"scripts": ["background.js"]
 	},
 	"options_ui": {
-		"page": "options/options.html",
-		"chrome_style": true
+		"page":	"options/options.html",
+		"chrome_style":	true
 	},
 	"browser_action": {
-		"browser_style": true,
-		"default_title": "about:about",
-		"default_popup": "popup/popup.html",
+		"browser_style":	true,
+		"default_title":	"about:about",
+		"default_popup":	"popup/popup.html",
 		"default_icon": {
-			"16": "icons/16/cog.png",
-			"24": "icons/24/cog.png",
-			"32": "icons/32/cog.png",
-			"48": "icons/48/cog.png",
-			"64": "icons/64/cog.png",
-			"72": "icons/72/cog.png",
-			"96": "icons/96/cog.png",
-			"128":"icons/128/cog.png",
-			"256":"icons/256/cog.png"
+			"16":	"icons/16/cog.png",
+			"24":	"icons/24/cog.png",
+			"32":	"icons/32/cog.png",
+			"48":	"icons/48/cog.png",
+			"64":	"icons/64/cog.png",
+			"72":	"icons/72/cog.png",
+			"96":	"icons/96/cog.png",
+			"128":	"icons/128/cog.png",
+			"256":	"icons/256/cog.png"
 		}
 	}
 }
