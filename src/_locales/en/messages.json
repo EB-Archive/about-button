@@ -1,0 +1,19 @@
+{
+	"extensionName_firefox":	{ "message":	"about:about Button"	},
+	"extensionName_chrome":	{ "message":	"chrome://about Button"	},
+
+	"description_firefox":	{ "message":	"A WebExtension to quickly open about:* pages."	},
+	"description_chrome":	{ "message":	"A WebExtension to quickly open chrome://* pages."	},
+
+	"browserAction_firefox":	{ "message":	"about:about"	},
+	"browserAction_chrome":	{ "message":	"chrome://about"	},
+
+	"popup_openOptions":	{ "message":	"Open extension options"	},
+	"popup_privilegedHidden":	{ "message":	"Privileged pages have been hidden"	},
+	"popup_debugButton": {
+		"message":	"Toggle privileged\n$protocol$ pages visibility",
+		"placeholders":	{ "protocol": { "content" : "$1" }}
+	},
+
+	"options_showDisabledButtons":	{ "message":	"Show privileged pages (currently can’t be opened from the menu)"	}
+}

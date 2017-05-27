@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	document.getElementById("open-options").addEventListener("click", () => {
 		browser.runtime.openOptionsPage();
 	});
+	i18nInit();
 	reload();
 });
 
@@ -85,6 +86,30 @@ function isShimmed(page) {
 		}
 	}
 	return false;
+}
+
+/**
+ * Applies internationalization to the popup.
+ *
+ * @returns {undefined}
+ */
+function i18nInit() {
+	document.getElementById("open-options").appendChild(document.createTextNode(browser.i18n.getMessage("popup_openOptions")));
+	browser.runtime.getBrowserInfo().then(info => {
+		let protocol;
+
+		switch (info.name) {
+			default:
+			case "Firefox":
+				protocol = "about:";
+				break;
+			case "Chrome":
+				protocol = "chrome://";
+				break;
+		}
+
+		document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", protocol)));
+	});
 }
 
 /**
@@ -108,7 +133,7 @@ function reload() {
 		if (showDisabledButtons === undefined)
 			showDisabledButtons = true;
 		if (!showDisabledButtons) {
-			status.appendChild(document.createTextNode("Greyed-out buttons have been hidden"));
+			status.appendChild(document.createTextNode(browser.i18n.getMessage("popup_privilegedHidden")));
 		}
 		pages.forEach(page => {
 			let disabled = false;
