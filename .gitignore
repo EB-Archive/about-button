@@ -5,6 +5,7 @@
 !/src
 
 # Git
+!.gitattributes
 !.gitignore
 !README*
 !LICENSE*

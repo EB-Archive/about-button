@@ -22,12 +22,15 @@ const ABOUT_PAGES = [];
  * @param {String} page
  * @param {String} icon
  * @param {Boolean} privileged
+ * @param {String} shim (Optional)
  * @returns {undefined}
  */
-function initPage(page, icon, privileged) {
-	registerPage({page: page, icon: icon, privileged: privileged}, registered => {
+function initPage(page, icon, privileged, shim) {
+	let message = {page: page, icon: icon, privileged: privileged};
+	if (shim) message.shim = shim;
+	registerPage(message, registered => {
 		if (!registered) {
-			console.warn("[Firefox about:about Button]", "Failed to register page:", page);
+			console.warn("[about:about Button]", "Failed to register page:", page);
 		}
 	}, true);
 }
@@ -39,22 +42,28 @@ function initPage(page, icon, privileged) {
  * @returns {undefined}
  */
 function registerPage(message, resolve, privileged) {
-	let data = [];
-	data[0] = String(message.page);
-	data[1] = String(message.icon !== undefined ? message.icon : "");
-	data[2] = Boolean(message.privileged);
+	var data = {
+		url: new String(message.page),
+		icon: new String((typeof message.icon !== undefined && typeof message.icon !== null) ? message.icon : ""),
+		privileged: new Boolean(message.privileged)
+	};
 
+	let path = removeProtocolFromURL(data.url);
 	let isNew = true;
 	if (privileged) {
 		for (let i = 0; i < ABOUT_PAGES.length; i++) {
 			let d = ABOUT_PAGES[i];
-			if (data[0].localeCompare(d[0], {sensitivity: "accent", numeric: true}) === 0) {
+			if (path.localeCompare(removeProtocolFromURL(d.url), {sensitivity: "accent", numeric: true}) === 0) {
 				ABOUT_PAGES.slice(i, 1);
 			}
 		}
+		// Shims are only available to be created by a trusted source (i.e. this extension)
+		if (message.shim) {
+			data.shim = new String(message.shim);
+		}
 	} else {
 		for (let d in ABOUT_PAGES) {
-			if (data[0].localeCompare(d[0], {sensitivity: "accent", numeric: true}) === 0) {
+			if (path.localeCompare(removeProtocolFromURL(d.url), {sensitivity: "accent", numeric: true}) === 0) {
 				isNew = false;
 				break;
 			}
@@ -64,10 +73,10 @@ function registerPage(message, resolve, privileged) {
 	if (isNew) {
 		ABOUT_PAGES.push(data);
 		ABOUT_PAGES.sort((a, b) => {
-			return a[0].localeCompare(b[0], {
+			return removeProtocolFromURL(a.url).localeCompare(removeProtocolFromURL(b.url), {
 				sensitivity: "accent",
 				numeric: true
-			})
+			});
 		});
 		browser.runtime.sendMessage({
 			type: "pagesChanged"
@@ -79,6 +88,16 @@ function registerPage(message, resolve, privileged) {
 	if (typeof resolve === "function")
 		resolve(isNew);
 	return;
+}
+
+/**
+ *
+ * @param {String} url
+ * @returns {String}
+ */
+function removeProtocolFromURL(url) {
+	let path = /(?:\w+:(?:\/\/)?)?(.*)/.exec(url);
+		return path ? path[1] : url;
 }
 
 browser.runtime.onMessage.addListener((message, sender, resolve) => {
@@ -97,7 +116,7 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 				return false;
 			}).then(showDisabledButtons => {
 				return {
-					pages: ABOUT_PAGES.slice(),
+					pages: JSON.stringify(ABOUT_PAGES),
 					showDisabledButtons: showDisabledButtons
 				};
 			});

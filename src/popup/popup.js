@@ -28,7 +28,9 @@ let isDebug = false;
  * @type Boolean
  */
 let usePagesShim = true;
-let pagesShims = ["about:addons", "about:credits"];
+let pagesShims = {
+	"Firefox": ["about:addons", "about:credits"]
+};
 
 document.addEventListener("DOMContentLoaded", () => {
 	browser.storage.onChanged.addListener((changes, areaName) => {
@@ -75,12 +77,17 @@ document.addEventListener("DOMContentLoaded", () => {
  * Checks if the suppplied page is shimmed.
  *
  * @param {String} page The page to check.
+ * @param {String} url The page’s url with the protocol to check.
+ * @param {Object} browserInfo The browser info.
  * @returns {Boolean} If the page is shimmed.
  */
-function isShimmed(page) {
+function isShimmed(page, url, browserInfo) {
 	if (usePagesShim) {
-		for (let p of pagesShims) {
-			if (page === p) {
+		if (page.shim)
+			return true;
+		let shims = pagesShims[browserInfo.name] || [];
+		for (let p of shims) {
+			if (page.url === p || url === p) {
 				return true;
 			}
 		}
@@ -95,21 +102,25 @@ function isShimmed(page) {
  */
 function i18nInit() {
 	document.getElementById("open-options").appendChild(document.createTextNode(browser.i18n.getMessage("popup_openOptions")));
-	browser.runtime.getBrowserInfo().then(info => {
-		let protocol;
+	if (browser.runtime.getBrowserInfo) {
+		browser.runtime.getBrowserInfo().then(info => {
+			let protocol;
 
-		switch (info.name) {
-			default:
-			case "Firefox":
-				protocol = "about:";
-				break;
-			case "Chrome":
-				protocol = "chrome://";
-				break;
-		}
+			switch (info.name) {
+				default:
+				case "Firefox":
+					protocol = "about:";
+					break;
+				case "Chrome":
+					protocol = "chrome://";
+					break;
+			}
 
-		document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", protocol)));
-	});
+			document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", protocol)));
+		});
+	} else {
+		document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", "chrome://")));
+	}
 }
 
 /**
@@ -127,37 +138,71 @@ function reload() {
 	browser.runtime.sendMessage({
 		type: "getPages"
 	}).then(response => {
-		let pages = response.pages;
+		if (browser.runtime.getBrowserInfo) {
+			return browser.runtime.getBrowserInfo().then(info => {
+				response.browserInfo = info;
+				return response;
+			});
+		} else {
+			response.browserInfo = {
+				// Assume running under Google Chrome for now, because the minimum
+				// supported Firefox version supports `browser.runtime.getBrowserInfo()`
+				// and we currently only have code for Mozilla Firefox and Google Chrome.
+				// TODO: Dynamically resolve this once Opera and Edge are supported!
+				name: "Chrome",
+				vendor: "Google",
+				version: "Unknown",
+				buildID: "Unknown"
+			};
+			return response;
+		}
+	}).then(response => {
+		let pages = JSON.parse(response.pages);
 		let showDisabledButtons = response.showDisabledButtons;
+		let protocol;
+
+		switch (response.browserInfo.name) {
+			default:
+			case "Firefox":
+				protocol = "about:";
+				break;
+			case "Chrome":
+				protocol = "chrome://";
+				break;
+		}
 
 		if (showDisabledButtons === undefined)
 			showDisabledButtons = true;
 		if (!showDisabledButtons) {
 			status.appendChild(document.createTextNode(browser.i18n.getMessage("popup_privilegedHidden")));
 		}
+		console.log(pages);
 		pages.forEach(page => {
+			console.log(page);
 			let disabled = false;
-			if (page[2] && !isShimmed(page[0])) {
+			let url = page.url.includes(':') ? page.url : protocol + page.url;
+			if (page.privileged && !isShimmed(page, url, response.browserInfo)) {
 				disabled = true;
 				if (!showDisabledButtons)
 					return;
 			}
 
+			console.log(url);
 			let button = document.createElement("button");
-			let img = generateImg(page[1]);
+			let img = generateImg(page.icon);
 			button.setAttribute("type", "button");
 			if (disabled) button.setAttribute("disabled", true);
 			button.appendChild(img);
-			button.appendChild(document.createTextNode(page[0]));
+			button.appendChild(document.createTextNode(url));
 			button.addEventListener("click", evt => {
-				if (!page[2]) {
-					browser.tabs.create({url: page[0]});
-				} else if (usePagesShim && page[0] === "about:addons") {
+				if (!page.privileged) {
+					browser.tabs.create({url: url});
+				} else if (usePagesShim && url === "about:addons") {
 					browser.runtime.openOptionsPage();
-				} else if (usePagesShim && page[0] === "about:credits") {
-					browser.tabs.create({url: "https://www.mozilla.org/credits/"});
+				} else if (usePagesShim && page.shim) {
+					browser.tabs.create({url: page.shim});
 				} else {
-					browser.tabs.create({url: "/redirect/redirect.html?dest=" + page[0]});
+					browser.tabs.create({url: "/redirect/redirect.html?dest=" + url});
 				}
 			});
 			content.appendChild(button);
