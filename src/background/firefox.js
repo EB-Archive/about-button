@@ -1,62 +1,44 @@
-/*
- * Copyright (C) 2017 ExE Boss
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-/* global browser */
-/* global initPage */
+[
+	{"url": "",	"icon": "firefox",	"privileged": true,	"category": "general"},
+	{"url": "about",	"icon": "cog",	"privileged": true,	"category": "general"},
+	{"url": "accounts",	"icon": "user",	"privileged": true,	"category": "general"},
+	{"url": "addons",	"icon": "plugin",	"privileged": true,	"category": "general"},
+	{"url": "about:blank",	"icon": "page-white",	"privileged": false,	"category": "general"},
+	{"url": "buildconfig",	"icon": "building",	"privileged": true,	"category": "general"},
+	{"url": "cache",	"icon": "drive",	"privileged": true,	"category": "general"},
+	{"url": "checkerboard",	"icon": "chart-line",	"privileged": true,	"category": "general"},
+	{"url": "config",	"icon": "wrench",	"privileged": true,	"category": "general"},
+	{"url": "crashes",	"icon": "error",	"privileged": true,	"category": "general"},
+	{"url": "credits",	"icon": "vcard",	"privileged": true,	"category": "general",	"shim": "https://www.mozilla.org/credits/"},
+	{"url": "debugging",	"icon": "script-lightning",	"privileged": true,	"category": "general"},
+	{"url": "devtools-toolbox",	"icon": "wrench-orange",	"privileged": true,	"category": "general"},
+	{"url": "downloads",	"icon": "drive-down",	"privileged": true,	"category": "general"},
+	{"url": "healthreport",	"icon": "heart",	"privileged": true,	"category": "general"},
+	{"url": "home",	"icon": "house",	"privileged": false,	"category": "general"},
+	{"url": "license",	"icon": "report",	"privileged": false,	"category": "general"},
+	{"url": "logo",	"icon": "picture-empty",	"privileged": false,	"category": "general"},
+	{"url": "memory",	"icon": "memory",	"privileged": true,	"category": "general"},
+	{"url": "mozilla",	"icon": "world",	"privileged": true,	"category": "general"},
+	{"url": "networking",	"icon": "world-network",	"privileged": true,	"category": "general"},
+	{"url": "newtab",	"icon": "tab",	"privileged": true,	"category": "general"},
+	{"url": "performance",	"icon": "server-lightning",	"privileged": true,	"category": "general"},
+	{"url": "plugins",	"icon": "brick",	"privileged": true,	"category": "general"},
+	{"url": "preferences",	"icon": "options-wrench",	"privileged": true,	"category": "general"},
+	{"url": "privatebrowsing",	"icon": "lock",	"privileged": true,	"category": "general"},
+	{"url": "profiles",	"icon": "group",	"privileged": true,	"category": "general"},
+	{"url": "rights",	"icon": "receipt",	"privileged": false,	"category": "general"},
+	{"url": "robots",	"icon": "user-red",	"privileged": true,	"category": "general"},
+	{"url": "serviceworkers",	"icon": "script-gear",	"privileged": true,	"category": "general"},
+	{"url": "sessionrestore",	"icon": "lightning",	"privileged": true,	"category": "general"},
+	{"url": "support",	"icon": "help",	"privileged": true,	"category": "general"},
+	{"url": "sync-log",	"icon": "page-refresh",	"privileged": true,	"category": "general"},
+	{"url": "sync-tabs",	"icon": "tabs-refresh",	"privileged": true,	"category": "general"},
+	{"url": "telemetry",	"icon": "chart-curve",	"privileged": true,	"category": "general"},
+	{"url": "webrtc",	"icon": "phone",	"privileged": true,	"category": "general"},
+	{"url": "welcomeback",	"icon": "emoticon-smile",	"privileged": true,	"category": "general"},
 
-// Firefox specific code:
-
-initPage("",	"firefox",	true);
-initPage("about",	"cog",	true);
-initPage("accounts",	"user",	true);
-initPage("addons",	"plugin",	true);
-initPage("about:blank",	"page-white",	false);
-initPage("buildconfig",	"building",	true);
-initPage("cache",	"drive",	true);
-initPage("checkerboard",	"chart-line",	true);
-initPage("config",	"wrench",	true);
-initPage("crashes",	"error",	true);
-initPage("credits",	"vcard",	true,	"https://www.mozilla.org/credits/");
-initPage("debugging",	"script-lightning",	true);
-initPage("devtools-toolbox",	"wrench-orange",	true);
-initPage("downloads",	"drive-down",	true);
-initPage("healthreport",	"heart",	true);
-initPage("home",	"house",	false);
-initPage("license",	"report",	false);
-initPage("logo",	"picture-empty",	false);
-initPage("memory",	"memory",	true);
-initPage("mozilla",	"world",	true);
-initPage("networking",	"world-network",	true);
-initPage("newtab",	"tab",	true);
-initPage("performance",	"server-lightning",	true);
-initPage("plugins",	"brick",	true);
-initPage("preferences",	"options-wrench",	true);
-initPage("privatebrowsing",	"lock",	true);
-initPage("profiles",	"group",	true);
-initPage("rights",	"receipt",	false);
-initPage("robots",	"user-red",	true);
-initPage("serviceworkers",	"script-gear",	true);
-initPage("sessionrestore",	"lightning",	true);
-initPage("support",	"help",	true);
-initPage("sync-log",	"page-refresh",	true);
-initPage("sync-tabs",	"tabs-refresh",	true);
-initPage("telemetry",	"chart-curve",	true);
-initPage("webrtc",	"phone",	true);
-initPage("welcomeback",	"emoticon-smile",	true);
-// It has been confirmed that the following can't be used
-// by other addons to inject malicious code into this extension:
-//initPage("<div id=\"stuff\">inADiv</div>",	"phone.png\" style=\"background-color: red;\" data-fileext=\"",	false);
-
+	{"url": "blocked",	"icon": "link-delete",	"privileged": true, "category": "debug"},
+	{"url": "certerror",	"icon": "report-error",	"privileged": true, "category": "debug"},
+	{"url": "neterror",	"icon": "world-network-error",	"privileged": true, "category": "debug"},
+	{"url": "tabcrashed",	"icon": "tab-stop",	"privileged": true, "category": "debug"}
+]
