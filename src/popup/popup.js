@@ -176,9 +176,7 @@ function reload() {
 		if (!showDisabledButtons) {
 			status.appendChild(document.createTextNode(browser.i18n.getMessage("popup_privilegedHidden")));
 		}
-		console.log(pages);
 		pages.forEach(page => {
-			console.log(page);
 			let disabled = false;
 			let url = page.url.includes(':') ? page.url : protocol + page.url;
 			if (page.privileged && !isShimmed(page, url, response.browserInfo)) {
@@ -187,7 +185,6 @@ function reload() {
 					return;
 			}
 
-			console.log(url);
 			let button = document.createElement("button");
 			let img = generateImg(page.icon);
 			button.setAttribute("type", "button");

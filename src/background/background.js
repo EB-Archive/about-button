@@ -15,25 +15,53 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /* global browser */
-/* global initPage */
 const ABOUT_PAGES = [];
 
-/**
- * @param {String} page
- * @param {String} icon
- * @param {Boolean} privileged
- * @param {String} shim (Optional)
- * @returns {undefined}
- */
-function initPage(page, icon, privileged, shim) {
-	let message = {page: page, icon: icon, privileged: privileged};
-	if (shim) message.shim = shim;
-	registerPage(message, registered => {
-		if (!registered) {
-			console.warn("[about:about Button]", "Failed to register page:", page);
+(async () => {
+	async function initPages(browserInfo) {
+		let xhr = new XMLHttpRequest();
+		xhr.open("GET", browser.runtime.getURL(`background/${browserInfo.name.toLowerCase()}.json`));
+		xhr.overrideMimeType("application/json");
+		await new Promise (resolve => {
+			xhr.onloadend = evt => {
+				resolve();
+			};
+			xhr.send();
+		});
+		if (xhr.status !== 200) {
+			xhr = new XMLHttpRequest();
+			xhr.open("GET", browser.runtime.getURL("background/firefox.json"));
+			xhr.overrideMimeType("application/json");
+			await new Promise (resolve => {
+				xhr.onloadend = evt => {
+					resolve();
+				};
+				xhr.send();
+			});
+			if (xhr.status !== 200) {
+				throw new Error("Cannot load about: URL configuration");
+			}
 		}
-	}, true);
-}
+		JSON.parse(xhr.response).forEach(message => {
+			registerPage(message, registered => {
+				if (!registered) {
+					console.warn("[about:about Button]", "Failed to register page:", message.url);
+				}
+			}, true);
+		});
+	}
+
+	if (browser.runtime.getBrowserInfo) {
+		initPages(await browser.runtime.getBrowserInfo());
+	} else {
+		initPages({
+			name: "Chrome",
+			vendor: "Google",
+			version: "Unknown",
+			buildID: "Unknown"
+		});
+	}
+})();
 
 /**
  * @param {Object} message
@@ -43,7 +71,7 @@ function initPage(page, icon, privileged, shim) {
  */
 function registerPage(message, resolve, privileged) {
 	var data = {
-		url: new String(message.page),
+		url: new String(message.url),
 		icon: new String((typeof message.icon !== undefined && typeof message.icon !== null) ? message.icon : ""),
 		privileged: new Boolean(message.privileged)
 	};

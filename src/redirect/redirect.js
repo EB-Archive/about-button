@@ -29,7 +29,7 @@ function parseQuery(query) {
 	query.split('&').forEach((path) => {
 		let p = path.split('=');
 		ret[p[0]] = (p.length > 0 ? p[1] : true);
-	})
+	});
 	return ret;
 }
 

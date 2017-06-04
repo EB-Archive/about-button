@@ -31,8 +31,7 @@
 	"background": {
 		"persistent": true,
 		"scripts": [
-			"background/background.js",
-			"background/firefox.js"
+			"background/background.js"
 		]
 	},
 	"options_ui": {
