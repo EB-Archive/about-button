@@ -15,33 +15,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /* global browser */
-const ABOUT_PAGES = [];
+const ABOUT_PAGES	= [];
+var default_scheme	= null;
 
-(async () => {
-	async function initPages(browserInfo) {
+/**
+ * @param {String} config The name of the JSON config file in the config directory
+ * @returns {Promise}
+ */
+function getData(config) {
+	return new Promise(resolve => {
 		let xhr = new XMLHttpRequest();
-		xhr.open("GET", browser.runtime.getURL(`background/${browserInfo.name.toLowerCase()}.json`));
+		xhr.open("GET", browser.runtime.getURL(`config/${config}.json`));
 		xhr.overrideMimeType("application/json");
-		await new Promise (resolve => {
-			xhr.onloadend = evt => {
-				resolve();
-			};
-			xhr.send();
-		});
-		if (xhr.status !== 200) {
-			xhr = new XMLHttpRequest();
-			xhr.open("GET", browser.runtime.getURL("background/firefox.json"));
-			xhr.overrideMimeType("application/json");
-			await new Promise (resolve => {
-				xhr.onloadend = evt => {
-					resolve();
-				};
-				xhr.send();
-			});
+		xhr.onloadend = evt => {
+			resolve(xhr);
+		};
+		xhr.send();
+	});
+}
+
+(async function() {
+	let initPages = async (browserInfo) => {
+		let browserData = JSON.parse((await getData("browsers")).responseText);
+		let specificData = browserData.browsers[browserInfo.name];
+
+		/** @type XMLHttpRequest */
+		let xhr = null;
+		if (specificData) {
+			xhr = await getData(specificData.data);
+		} else {
+			specificData = browserData.__default;
+		}
+
+		if (xhr === null || xhr.status !== 200) {
+			xhr = await getData(browserData.__default.data);
 			if (xhr.status !== 200) {
 				throw new Error("Cannot load about: URL configuration");
 			}
 		}
+
+		default_scheme = specificData.default_scheme;
 		JSON.parse(xhr.response).forEach(message => {
 			registerPage(message, registered => {
 				if (!registered) {
@@ -49,16 +62,20 @@ const ABOUT_PAGES = [];
 				}
 			}, true);
 		});
-	}
+	};
 
 	if (browser.runtime.getBrowserInfo) {
 		initPages(await browser.runtime.getBrowserInfo());
 	} else {
 		initPages({
-			name: "Chrome",
-			vendor: "Google",
-			version: "Unknown",
-			buildID: "Unknown"
+			// Assume running under Google Chrome for now, because the minimum
+			// supported Firefox version supports `browser.runtime.getBrowserInfo()`
+			// and we currently only have code for Mozilla Firefox and Google Chrome.
+			// TODO: Dynamically resolve this once Opera and Edge are supported!
+			name:	"Chrome",
+			vendor:	"Google",
+			version:	"Unknown",
+			buildID:	"Unknown"
 		});
 	}
 })();
@@ -73,8 +90,16 @@ function registerPage(message, resolve, privileged) {
 	var data = {
 		url: new String(message.url),
 		icon: new String((typeof message.icon !== undefined && typeof message.icon !== null) ? message.icon : ""),
-		privileged: new Boolean(message.privileged)
+		privileged: new Boolean(message.privileged),
+		alias: []
 	};
+
+	if (message.alias) {
+		let length = new Number(message.alias.length);
+		for (let i = 0; i < length; i++) {
+			data.alias[i] = new String(message.alias[i]);
+		}
+	}
 
 	let path = removeProtocolFromURL(data.url);
 	let isNew = true;
@@ -145,6 +170,7 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 			}).then(showDisabledButtons => {
 				return {
 					pages: JSON.stringify(ABOUT_PAGES),
+					default_scheme: default_scheme,
 					showDisabledButtons: showDisabledButtons
 				};
 			});

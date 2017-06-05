@@ -1,5 +1,5 @@
 [
-	{"url": "about",	"icon": "cog",	"privileged": false,	"category": "general"},
+	{"url": "about",	"icon": "cog",	"privileged": false,	"category": "general", "alias": ["chrome-urls"]},
 	{"url": "accessibility",	"icon": "zoom",	"privileged": false,	"category": "general"},
 	{"url": "appcache-internals",	"icon": "application-gear",	"privileged": false,	"category": "general"},
 	{"url": "apps",	"icon": "application-double",	"privileged": false,	"category": "general"},
@@ -8,7 +8,6 @@
 	{"url": "bookmarks",	"icon": "bookmark",	"privileged": false,	"category": "general"},
 	{"url": "cache",	"icon": "server-database",	"privileged": false,	"category": "general"},
 	{"url": "chrome",	"icon": "google",	"privileged": false,	"category": "general"},
-	{"url": "chrome-urls",	"icon": "cog",	"privileged": false,	"category": "general"},
 	{"url": "components",	"icon": "brick",	"privileged": false,	"category": "general"},
 	{"url": "conflicts",	"icon": "link-break",	"privileged": false,	"category": "general"},
 	{"url": "crashes",	"icon": "error",	"privileged": false,	"category": "general"},

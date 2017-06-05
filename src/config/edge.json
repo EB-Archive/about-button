@@ -1,0 +1,4 @@
+[
+	{"url": "about:blank",	"icon": "page-white",	"privileged": false,	"category": "general"},
+	{"url": "flags",	"icon": "wrench",	"privileged": false,	"category": "general"}
+]

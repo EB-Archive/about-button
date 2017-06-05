@@ -158,18 +158,8 @@ function reload() {
 		}
 	}).then(response => {
 		let pages = JSON.parse(response.pages);
+		let protocol = response.default_scheme;
 		let showDisabledButtons = response.showDisabledButtons;
-		let protocol;
-
-		switch (response.browserInfo.name) {
-			default:
-			case "Firefox":
-				protocol = "about:";
-				break;
-			case "Chrome":
-				protocol = "chrome://";
-				break;
-		}
 
 		if (showDisabledButtons === undefined)
 			showDisabledButtons = true;
@@ -202,6 +192,13 @@ function reload() {
 					browser.tabs.create({url: "/redirect/redirect.html?dest=" + url});
 				}
 			});
+			if (page.alias.length > 0) {
+				let title = "Aliases:";
+				page.alias.forEach(alias => {
+					title += `\n${alias.includes(':') ? alias : protocol + alias}`;
+				});
+				button.setAttribute("title", title);
+			}
 			content.appendChild(button);
 		});
 	}).then(() => {

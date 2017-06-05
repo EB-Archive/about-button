@@ -1,0 +1,24 @@
+{
+	"__default": {
+		"scheme": "chrome://",
+		"data": "chrome"
+	},
+	"browsers": {
+		"Chrome": {
+			"default_scheme": "chrome://",
+			"data": "chrome"
+		},
+		"Edge": {
+			"default_scheme": "about:",
+			"data": "edge"
+		},
+		"Firefox": {
+			"default_scheme": "about:",
+			"data": "firefox"
+		},
+		"Opera": {
+			"default_scheme": "opera://",
+			"data": "chrome"
+		}
+	}
+}

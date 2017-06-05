@@ -8,7 +8,7 @@
 
 	"manifest_version": 2,
 	"name":	"__MSG_extensionName_firefox__",
-	"version":	"0.1.9",
+	"version":	"0.1.10",
 	"author":	"ExE Boss",
 	"description":	"__MSG_description_firefox__",
 	"default_locale": "en",
@@ -30,9 +30,7 @@
 
 	"background": {
 		"persistent": true,
-		"scripts": [
-			"background/background.js"
-		]
+		"scripts": ["background.js"]
 	},
 	"options_ui": {
 		"browser_style":	true,
