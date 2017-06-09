@@ -1,6 +1,6 @@
 {
 	"__default": {
-		"scheme": "chrome://",
+		"default_scheme": "chrome://",
 		"data": "chrome"
 	},
 	"browsers": {

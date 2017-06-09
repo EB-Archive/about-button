@@ -20,47 +20,60 @@ var default_scheme	= null;
 
 /**
  * @param {String} config The name of the JSON config file in the config directory
- * @returns {Promise}
+ * @return {Promise.&lt;Response&gt;} The content of the JSON config file
  */
 function getData(config) {
-	return new Promise(resolve => {
-		let xhr = new XMLHttpRequest();
-		xhr.open("GET", browser.runtime.getURL(`config/${config}.json`));
-		xhr.overrideMimeType("application/json");
-		xhr.onloadend = evt => {
-			resolve(xhr);
-		};
-		xhr.send();
-	});
+	return fetch(`config/${config}.json`);
 }
 
 (async function() {
+	/**
+	 * @typedef {Object} BrowserInfo
+	 * @property {String} name
+	 * @property {String} vendor
+	 * @property {String} version
+	 * @property {String} buildID
+	 */
+	/**
+	 * @param {BrowserInfo} browserInfo
+	 * @return {undefined}
+	 */
 	let initPages = async (browserInfo) => {
-		let browserData = JSON.parse((await getData("browsers")).responseText);
+		/**
+		 * @typedef {Object} BrowserData
+		 * @property {BrowserData$Browser} __default
+		 * @property {Object} browsers
+		 */
+		/**
+		 * @typedef {Object} BrowserData$Browser
+		 * @property {String} default_scheme
+		 * @property {String} data
+		 */
+		/** @type BrowserData */
+		let browserData = await getData("browsers").then(r => r.json());
+		/** @type BrowserData$Browser */
 		let specificData = browserData.browsers[browserInfo.name];
 
-		/** @type XMLHttpRequest */
-		let xhr = null;
+		/** @type Response */
+		let response = null;
 		if (specificData) {
-			xhr = await getData(specificData.data);
+			response = await getData(specificData.data);
 		} else {
 			specificData = browserData.__default;
 		}
 
-		if (xhr === null || xhr.status !== 200) {
-			xhr = await getData(browserData.__default.data);
-			if (xhr.status !== 200) {
+		if (response === null || response.status !== 200) {
+			response = await getData(browserData.__default.data);
+			if (response.status !== 200) {
 				throw new Error("Cannot load about: URL configuration");
 			}
 		}
 
 		default_scheme = specificData.default_scheme;
-		JSON.parse(xhr.response).forEach(message => {
-			registerPage(message, registered => {
-				if (!registered) {
-					console.warn("[about:about Button]", "Failed to register page:", message.url);
-				}
-			}, true);
+		(await response.json()).forEach(message => {
+			if (!registerPage(message, true)) {
+				console.warn("[about:about Button]", "Failed to register page:", message.url);
+			}
 		});
 	};
 
@@ -82,11 +95,10 @@ function getData(config) {
 
 /**
  * @param {Object} message
- * @param {Function} resolve
  * @param {Boolean} privileged
- * @returns {undefined}
+ * @return {undefined}
  */
-function registerPage(message, resolve, privileged) {
+function registerPage(message, privileged) {
 	var data = {
 		url: new String(message.url),
 		icon: new String((typeof message.icon !== undefined && typeof message.icon !== null) ? message.icon : ""),
@@ -138,15 +150,13 @@ function registerPage(message, resolve, privileged) {
 				console.error(error);
 		});
 	}
-	if (typeof resolve === "function")
-		resolve(isNew);
-	return;
+	return isNew;
 }
 
 /**
  *
  * @param {String} url
- * @returns {String}
+ * @return {String}
  */
 function removeProtocolFromURL(url) {
 	let path = /(?:\w+:(?:\/\/)?)?(.*)/.exec(url);
@@ -157,8 +167,13 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 	let messageType = String(message.type);
 	switch (messageType) {
 		case "registerPage": {
-			registerPage(message, resolve, true);
-			return;
+			let result = registerPage(message, true);
+			if (typeof resolve === "function") {
+				resolve(result);	// Blame Mozilla's WebExtension Polyfill,
+				return;	// which implements this differently from Firefox.
+			} else { // You had one job, Mozilla. ONE JOB!
+				return result;	// Keep the Firefox and Polyfill implementation identical API-wise
+			}
 		} case "getPages": {
 			return browser.storage.local.get({
 				showDisabledButtons: false
@@ -184,8 +199,13 @@ if (browser.runtime.onMessageExternal) {
 		let messageType = String(message.type);
 		switch (messageType) {
 			case "registerPage": {
-				registerPage(message, resolve, false);
-				break;
+				let result = registerPage(message, false);
+				if (typeof resolve === "function") {
+					resolve(result);	// Blame Mozilla's WebExtension Polyfill,
+					return;	// which implements this differently from Firefox.
+				} else { // You had one job, Mozilla. ONE JOB!
+					return result;	// Keep the Firefox and Polyfill implementation identical API-wise
+				}
 			} default: {
 				throw "Invalid message type: " + messageType;
 			}

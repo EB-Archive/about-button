@@ -47,7 +47,7 @@ function saveOptions() {
 	});
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
 	element_showDisabledButtons = document.getElementById("showDisabledButtons");
 	for(let inputElement of document.getElementsByTagName("input")) {
 		let save = inputElement.hasAttribute("data-save") ? Boolean(inputElement.getAttribute("data-save")) : true;
