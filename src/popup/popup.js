@@ -79,7 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {String} page The page to check.
  * @param {String} url The page’s url with the protocol to check.
  * @param {Object} browserInfo The browser info.
- * @returns {Boolean} If the page is shimmed.
+ *
+ * @return {Boolean} If the page is shimmed.
  */
 function isShimmed(page, url, browserInfo) {
 	if (usePagesShim) {
@@ -98,7 +99,7 @@ function isShimmed(page, url, browserInfo) {
 /**
  * Applies internationalization to the popup.
  *
- * @returns {undefined}
+ * @return {undefined}
  */
 function i18nInit() {
 	document.getElementById("open-options").appendChild(document.createTextNode(browser.i18n.getMessage("popup_openOptions")));
@@ -126,7 +127,7 @@ function i18nInit() {
 /**
  * (Re-)load the current popup.
  */
-function reload() {
+async function reload() {
 	let main = document.getElementById("main");
 
 	let status = document.getElementById("status");
@@ -135,16 +136,22 @@ function reload() {
 
 	status.textContent = "";
 
-	browser.runtime.sendMessage({
-		type: "getPages"
-	}).then(response => {
+	try {
+		let pages;
+		let default_scheme;
+		let showDisabledButtons;
+		let browserInfo;
+
+		await (browser.runtime.sendMessage({ type: "getPages" }).then(response => {
+			pages	= JSON.parse(response.pages);
+			default_scheme	= response.default_scheme;
+			showDisabledButtons	= response.showDisabledButtons || false;
+		}));
+
 		if (browser.runtime.getBrowserInfo) {
-			return browser.runtime.getBrowserInfo().then(info => {
-				response.browserInfo = info;
-				return response;
-			});
+			browserInfo = await browser.runtime.getBrowserInfo();
 		} else {
-			response.browserInfo = {
+			browserInfo = {
 				// Assume running under Google Chrome for now, because the minimum
 				// supported Firefox version supports `browser.runtime.getBrowserInfo()`
 				// and we currently only have code for Mozilla Firefox and Google Chrome.
@@ -154,22 +161,16 @@ function reload() {
 				version: "Unknown",
 				buildID: "Unknown"
 			};
-			return response;
 		}
-	}).then(response => {
-		let pages = JSON.parse(response.pages);
-		let protocol = response.default_scheme;
-		let showDisabledButtons = response.showDisabledButtons;
 
-		if (showDisabledButtons === undefined)
-			showDisabledButtons = true;
 		if (!showDisabledButtons) {
 			status.appendChild(document.createTextNode(browser.i18n.getMessage("popup_privilegedHidden")));
 		}
+
 		pages.forEach(page => {
 			let disabled = false;
-			let url = page.url.includes(':') ? page.url : protocol + page.url;
-			if (page.privileged && !isShimmed(page, url, response.browserInfo)) {
+			let url = page.url.includes(':') ? page.url : default_scheme + page.url;
+			if (page.privileged && !isShimmed(page, url, browserInfo)) {
 				disabled = true;
 				if (!showDisabledButtons)
 					return;
@@ -195,26 +196,27 @@ function reload() {
 			if (page.alias.length > 0) {
 				let title = "Aliases:";
 				page.alias.forEach(alias => {
-					title += `\n${alias.includes(':') ? alias : protocol + alias}`;
+					title += `\n${alias.includes(':') ? alias : default_scheme + alias}`;
 				});
 				button.setAttribute("title", title);
 			}
 			content.appendChild(button);
 		});
-	}).then(() => {
+
 		main.textContent = "";
 		main.appendChild(content);
-	}).catch(error => {
+	} catch (error) {
 		console.warn(error);
 		status.appendChild(document.createTextNode(error));
-	});
+	}
 }
 
 /**
- * Generate the &lt;img&gt; tag for the specified image.
+ * Generate the {@link HTMLImgElement &lt;img&gt;} tag for the specified image.
  *
- * @param {String} image
- * @returns {HTMLImgElement}
+ * @param {String} image The image file name
+ *
+ * @return {HTMLImgElement} The image tag
  */
 function generateImg(image) {
 	let img = document.createElement("img");
