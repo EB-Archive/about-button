@@ -32,7 +32,14 @@
  * @property {String} buildID
  */
 
-/** Used to toggle visibility of debug button. @type Boolean */
+/**
+ * Used to toggle visibility of the debug button.
+ *
+ * I’m not too worried about making this look good right
+ * now, as it’s only intended for debugging purposes.
+ *
+ * @type Boolean
+ */
 let isDebug = false;
 
 /**
@@ -121,25 +128,9 @@ function isShimmed(page, url, browserInfo) {
  */
 function i18nInit() {
 	document.getElementById("open-options").appendChild(document.createTextNode(browser.i18n.getMessage("popup_openOptions")));
-	if (browser.runtime.getBrowserInfo) {
-		browser.runtime.getBrowserInfo().then(info => {
-			let protocol;
-
-			switch (info.name) {
-				default:
-				case "Firefox":
-					protocol = "about:";
-					break;
-				case "Chrome":
-					protocol = "chrome://";
-					break;
-			}
-
-			document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", protocol)));
-		});
-	} else {
-		document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", "chrome://")));
-	}
+	browser.runtime.sendMessage({ method: "getScheme" }).then(protocol => {
+		document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", protocol)));
+	});
 }
 
 /**
@@ -148,11 +139,14 @@ function i18nInit() {
 async function reload() {
 	let main = document.getElementById("main");
 
+	let statusContainer = document.getElementById("status-container");
 	let status = document.getElementById("status");
 	let content = document.createElement("div");
 	content.setAttribute("id", "main-content");
+	content.classList.add("panel-section", "panel-section-list")
 
 	status.textContent = "";
+	statusContainer.classList.add("hidden");
 
 	try {
 		/** @type AboutPage[] */
@@ -186,8 +180,12 @@ async function reload() {
 		}
 
 		if (!showDisabledButtons) {
-			status.appendChild(document.createTextNode(browser.i18n.getMessage("popup_privilegedHidden")));
+			let statusMessage = document.createElement("div");
+			statusMessage.appendChild(document.createTextNode(browser.i18n.getMessage("popup_privilegedHidden")));
+			status.appendChild(statusMessage);
+			statusContainer.classList.remove("hidden");
 		}
+
 
 		pages.forEach(page => {
 			let disabled = false;
@@ -198,11 +196,14 @@ async function reload() {
 					return;
 			}
 
-			/** @type HTMLButtonElement */
-			let button = document.createElement("button");
+			let button = document.createElement("div");
 			let img = generateImg(page.icon);
 			button.setAttribute("type", "button");
-			if (disabled) button.setAttribute("disabled", true);
+			button.classList.add("panel-list-item");
+			if (disabled) {
+				button.setAttribute("disabled", true);
+				button.classList.add("disabled");
+			}
 			button.appendChild(img);
 			button.appendChild(document.createTextNode(url));
 			button.addEventListener("click", evt => {
@@ -243,7 +244,10 @@ async function reload() {
 		main.appendChild(content);
 	} catch (error) {
 		console.warn(error);
-		status.appendChild(document.createTextNode(error));
+		let statusMessage = document.createElement("div");
+		statusMessage.appendChild(document.createTextNode(error));
+		status.appendChild(statusMessage);
+		statusContainer.classList.remove("hidden");
 	}
 }
 

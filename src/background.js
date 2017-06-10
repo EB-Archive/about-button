@@ -211,6 +211,13 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 					showDisabledButtons: showDisabledButtons
 				};
 			});
+		} case "getScheme": {
+			if (typeof resolve === "function") {
+				resolve(defaultScheme);	// Blame Mozilla's WebExtension Polyfill,
+				return;	// which implements this differently from Firefox.
+			} else { // You had one job, Mozilla. ONE JOB!
+				return defaultScheme;	// Keep the Firefox and Polyfill implementation identical API-wise
+			}
 		} default: {}
 	}
 });

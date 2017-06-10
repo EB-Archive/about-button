@@ -8,7 +8,7 @@
 	"browserAction_firefox":	{ "message":	"about:about"	},
 	"browserAction_chrome":	{ "message":	"chrome://about"	},
 
-	"popup_openOptions":	{ "message":	"Open extension options"	},
+	"popup_openOptions":	{ "message":	"Open Extension Options"	},
 	"popup_privilegedHidden":	{ "message":	"Privileged pages have been hidden"	},
 	"popup_debugButton": {
 		"message":	"Toggle privileged\n$protocol$ pages visibility",
