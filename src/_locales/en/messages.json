@@ -15,5 +15,8 @@
 		"placeholders":	{ "protocol": { "content" : "$1" }}
 	},
 
+	"category_general":	{"message":	"General"},
+	"category_debug":	{"message":	"Debugging"},
+
 	"options_showDisabledButtons":	{ "message":	"Show privileged pages (currently can’t be opened from the menu)"	}
 }

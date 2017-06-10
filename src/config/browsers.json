@@ -1,5 +1,5 @@
 {
-	"__default": {
+	"default": {
 		"default_scheme": "chrome://",
 		"data": "chrome"
 	},

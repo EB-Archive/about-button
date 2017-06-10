@@ -17,6 +17,12 @@
 /* global browser */
 
 /**
+ * @typedef {Object} Category
+ * @property {String} category The category ID
+ * @property {Number} priority The category priority
+ * @property {AboutPage[]} content All the about: pages
+ */
+/**
  * @typedef {Object} AboutPage
  * @property {String} url The page URL
  * @property {?String} icon The page icon
@@ -32,7 +38,7 @@
  * @property {String} buildID
  */
 
-/** All the registered pages. @type AboutPage */
+/** All the registered pages. @type Category[] */
 const ABOUT_PAGES	= [];
 var defaultScheme	= null;
 
@@ -53,7 +59,7 @@ function getData(config) {
 	let initPages = async (browserInfo) => {
 		/**
 		 * @typedef {Object} BrowserData
-		 * @property {BrowserData$Browser} __default
+		 * @property {BrowserData$Browser} default
 		 * @property {Object} browsers
 		 */
 		/**
@@ -71,21 +77,27 @@ function getData(config) {
 		if (specificData) {
 			response = await getData(specificData.data);
 		} else {
-			specificData = browserData.__default;
+			specificData = browserData.default;
 		}
 
 		if (response === null || response.status !== 200) {
-			response = await getData(browserData.__default.data);
+			response = await getData(browserData.default.data);
 			if (response.status !== 200) {
 				throw new Error("Cannot load about: URL configuration");
 			}
 		}
 
 		defaultScheme = specificData.default_scheme;
-		(await response.json()).forEach(message => {
-			if (!registerPage(message, true)) {
-				console.warn("[about:about Button]", "Failed to register page:", message.url);
-			}
+		(await response.json()).forEach(category => {
+			category.content.forEach(page => {
+				page.category = {
+					category:	category.category,
+					priority:	category.priority
+				};
+				if (!registerPage(page, true)) {
+					console.warn("[about:about Button]", "Failed to register page:", page.url);
+				}
+			})
 		});
 	};
 
@@ -106,17 +118,63 @@ function getData(config) {
 })();
 
 /**
+ *
+ * @param {String} category The category ID.
+ * @param {Number} priority The priority.
+ * @returns {AboutPage[]} The about: pages
+ */
+function getCategory(category, priority) {
+	for (/** @type Category */ let c of ABOUT_PAGES) {
+		if (c.category.localeCompare(category, {
+			sensitivity: "accent",
+			numeric: true
+		}) === 0) {
+			if (priority !== undefined && c.priority === 0) {
+				c.priority = priority;
+			}
+			return c.content;
+		}
+	}
+
+	let content = [];
+	ABOUT_PAGES.push({
+		category:	category,
+		priority:	priority || 0,
+		content:	content
+	});
+	ABOUT_PAGES.sort((a, b) => {
+		if (a.priority !== b.priority) {
+			return b.priority - a.priority;
+		}
+		return a.category.localeCompare(b.category, {
+			sensitivity: "accent",
+			numeric: true
+		});
+	});
+
+	return content;
+}
+
+/**
  * @param {AboutPage} message
  * @param {Boolean} privileged
  *
  * @return {undefined}
  */
 function registerPage(message, privileged) {
+	/** @type AboutPage[] */
+	let aboutPages;
+	if (privileged && typeof message.category === "object") {
+		aboutPages = getCategory(String(message.category.category || "general").toLowerCase(), message.category.priority);
+	} else {
+		aboutPages = getCategory(String(message.category || "general").toLowerCase());
+	}
+
 	/** @type AboutPage */
 	var data = {
-		url: new String(message.url),
-		icon: new String((typeof message.icon !== undefined && typeof message.icon !== null) ? message.icon : ""),
-		privileged: new Boolean(message.privileged),
+		url: String(message.url),
+		icon: String((typeof message.icon !== undefined && typeof message.icon !== null) ? message.icon : ""),
+		privileged: Boolean(message.privileged),
 		description: "",
 		alias: []
 	};
@@ -133,10 +191,10 @@ function registerPage(message, privileged) {
 	if (privileged) {
 		if (message.description)
 			data.description = new String(message.description);
-		for (let i = 0; i < ABOUT_PAGES.length; i++) {
-			let d = ABOUT_PAGES[i];
+		for (let i = 0; i < aboutPages.length; i++) {
+			let d = aboutPages[i];
 			if (path.localeCompare(removeProtocolFromURL(d.url), {sensitivity: "accent", numeric: true}) === 0) {
-				ABOUT_PAGES.slice(i, 1);
+				aboutPages.slice(i, 1);
 			}
 		}
 		// Shims are only available to be created by a trusted source (i.e. this extension)
@@ -144,7 +202,7 @@ function registerPage(message, privileged) {
 			data.shim = new String(message.shim);
 		}
 	} else {
-		for (let d in ABOUT_PAGES) {
+		for (let d in aboutPages) {
 			if (path.localeCompare(removeProtocolFromURL(d.url), {sensitivity: "accent", numeric: true}) === 0) {
 				isNew = false;
 				data = d;
@@ -154,8 +212,8 @@ function registerPage(message, privileged) {
 	}
 
 	if (isNew) {
-		ABOUT_PAGES.push(data);
-		ABOUT_PAGES.sort((a, b) => {
+		aboutPages.push(data);
+		aboutPages.sort((a, b) => {
 			return removeProtocolFromURL(a.url).localeCompare(removeProtocolFromURL(b.url), {
 				sensitivity: "accent",
 				numeric: true
@@ -206,7 +264,7 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 				return false;
 			}).then(showDisabledButtons => {
 				return {
-					pages: JSON.stringify(ABOUT_PAGES),
+					categories: JSON.stringify(ABOUT_PAGES),
 					defaultScheme: defaultScheme,
 					showDisabledButtons: showDisabledButtons
 				};

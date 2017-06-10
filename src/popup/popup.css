@@ -30,7 +30,6 @@ body {
 }
 
 button, #main .panel-list-item, #open-options {
-	width: calc(100% + 32px);
 	text-align: left;
 	white-space: nowrap;
 }
@@ -75,7 +74,7 @@ button:disabled {
 	margin-right: 16px !important;
 }
 
-#main-content {
+#main > div {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -83,12 +82,17 @@ button:disabled {
 	border-spacing: 8px;
 }
 
-#main-content > button {
+#main > div > button {
 	margin: 4px;
 }
 
-#main-content div {
+#main > div > button,
+#main > div div {
 	line-height:	16px;
+}
+
+#main .panel-list-item, #main .panel-section, #open-options {
+	width: calc(100% + 16px) !important;
 }
 
 #footer {

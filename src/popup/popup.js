@@ -17,6 +17,11 @@
 /* global browser */
 
 /**
+ * @typedef {Object} Category
+ * @property {String} category The category ID
+ * @property {AboutPage[]} content All the about: pages
+ */
+/**
  * @typedef {Object} AboutPage
  * @property {String} url The page URL
  * @property {?String} icon The page icon
@@ -141,16 +146,13 @@ async function reload() {
 
 	let statusContainer = document.getElementById("status-container");
 	let status = document.getElementById("status");
-	let content = document.createElement("div");
-	content.setAttribute("id", "main-content");
-	content.classList.add("panel-section", "panel-section-list")
 
 	status.textContent = "";
 	statusContainer.classList.add("hidden");
 
 	try {
-		/** @type AboutPage[] */
-		let pages;
+		/** @type Category[] */
+		let categories;
 		/** @type String */
 		let defaultScheme;
 		/** @type Boolean */
@@ -159,7 +161,7 @@ async function reload() {
 		let browserInfo;
 
 		await (browser.runtime.sendMessage({ method: "getPages" }).then(response => {
-			pages	= JSON.parse(response.pages);
+			categories	= JSON.parse(response.categories);
 			defaultScheme	= response.defaultScheme;
 			showDisabledButtons	= response.showDisabledButtons || false;
 		}));
@@ -186,62 +188,88 @@ async function reload() {
 			statusContainer.classList.remove("hidden");
 		}
 
-
-		pages.forEach(page => {
-			let disabled = false;
-			let url = page.url.includes(':') ? page.url : defaultScheme + page.url;
-			if (page.privileged && !isShimmed(page, url, browserInfo)) {
-				disabled = true;
-				if (!showDisabledButtons)
-					return;
-			}
-
-			let button = document.createElement("div");
-			let img = generateImg(page.icon);
-			button.setAttribute("type", "button");
-			button.classList.add("panel-list-item");
-			if (disabled) {
-				button.setAttribute("disabled", true);
-				button.classList.add("disabled");
-			}
-			button.appendChild(img);
-			button.appendChild(document.createTextNode(url));
-			button.addEventListener("click", evt => {
-				if (!page.privileged) {
-					browser.tabs.create({url: url});
-				} else if (usePagesShim && url === "about:addons") {
-					browser.runtime.openOptionsPage();
-				} else if (usePagesShim && page.shim) {
-					browser.tabs.create({url: page.shim});
-				} else {
-					browser.tabs.create({url: "/redirect/redirect.html?dest=" + url});
-				}
-			});
-			/** @type String */
-			let title = "";
-			if (page.description.length > 0) {
-				if (title.length > 0)
-					title += `\n${page.description}`;
-				else
-					title = page.description;
-			}
-			if (page.alias.length > 0) {
-				let aliases = "Aliases:";
-				page.alias.forEach(alias => {
-					aliases += `\n${alias.includes(':') ? alias : defaultScheme + alias}`;
-				});
-				if (title.length > 0)
-					title += `\n${aliases}`;
-				else
-					title = aliases;
-			}
-			if (title.length > 0)
-				button.setAttribute("title", title);
-			content.appendChild(button);
-		});
-
 		main.textContent = "";
-		main.appendChild(content);
+		categories.forEach(category => {
+			let header = document.createElement("div");
+			header.classList.add("panel-section", "panel-section-header");
+			let headerText = document.createElement("div");
+			headerText.classList.add("text-section-header");
+			let categoryName = browser.i18n.getMessage(`category_${category.category}`);
+
+			if (categoryName.length === 0) {
+				// The category hasn't been translated, so let’s use the ID
+				// TODO: Handle `camelCase` words
+				categoryName += category.category.split(/[\s_-]/).forEach(word => {
+					word = word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
+					if (categoryName.length > 0)
+						categoryName += ` ${word}`;
+					else
+						categoryName = word;
+				})
+			}
+
+			headerText.appendChild(document.createTextNode(categoryName));
+			header.appendChild(headerText);
+
+			let content = document.createElement("div");
+			content.classList.add("panel-section", "panel-section-list");
+			category.content.forEach(page => {
+				let disabled = false;
+				let url = page.url.includes(':') ? page.url : defaultScheme + page.url;
+				if (page.privileged && !isShimmed(page, url, browserInfo)) {
+					disabled = true;
+					if (!showDisabledButtons)
+						return;
+				}
+
+				let button = document.createElement("div");
+				let img = generateImg(page.icon);
+				button.setAttribute("type", "button");
+				button.classList.add("panel-list-item");
+				if (disabled) {
+					button.setAttribute("disabled", true);
+					button.classList.add("disabled");
+				}
+				button.appendChild(img);
+				button.appendChild(document.createTextNode(url));
+				button.addEventListener("click", evt => {
+					if (!page.privileged) {
+						browser.tabs.create({url: url});
+					} else if (usePagesShim && url === "about:addons") {
+						browser.runtime.openOptionsPage();
+					} else if (usePagesShim && page.shim) {
+						browser.tabs.create({url: page.shim});
+					} else {
+						browser.tabs.create({url: "/redirect/redirect.html?dest=" + url});
+					}
+				});
+				/** @type String */
+				let title = "";
+				if (page.description.length > 0) {
+					if (title.length > 0)
+						title += `\n${page.description}`;
+					else
+						title = page.description;
+				}
+				if (page.alias.length > 0) {
+					let aliases = "Aliases:";
+					page.alias.forEach(alias => {
+						aliases += `\n${alias.includes(':') ? alias : defaultScheme + alias}`;
+					});
+					if (title.length > 0)
+						title += `\n${aliases}`;
+					else
+						title = aliases;
+				}
+				if (title.length > 0)
+					button.setAttribute("title", title);
+				content.appendChild(button);
+			});
+			if (content.hasChildNodes()) {
+				main.appendChild(header);
+				main.appendChild(content);
+			}
+		});
 	} catch (error) {
 		console.warn(error);
 		let statusMessage = document.createElement("div");
