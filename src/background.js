@@ -15,11 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /* global browser */
+
+/**
+ * @typedef {Object} AboutPage
+ * @property {String} url The page URL
+ * @property {?String} icon The page icon
+ * @property {Boolean} privileged If the page is privileged
+ * @property {?String} description The description
+ * @property {?String[]} alias All the URL aliases of this page
+ */
+/**
+ * @typedef {Object} BrowserInfo
+ * @property {String} name
+ * @property {String} vendor
+ * @property {String} version
+ * @property {String} buildID
+ */
+
+/** All the registered pages. @type AboutPage */
 const ABOUT_PAGES	= [];
-var default_scheme	= null;
+var defaultScheme	= null;
 
 /**
  * @param {String} config The name of the JSON config file in the config directory
+ *
  * @return {Promise.&lt;Response&gt;} The content of the JSON config file
  */
 function getData(config) {
@@ -27,13 +46,6 @@ function getData(config) {
 }
 
 (async function() {
-	/**
-	 * @typedef {Object} BrowserInfo
-	 * @property {String} name
-	 * @property {String} vendor
-	 * @property {String} version
-	 * @property {String} buildID
-	 */
 	/**
 	 * @param {BrowserInfo} browserInfo
 	 * @return {undefined}
@@ -69,7 +81,7 @@ function getData(config) {
 			}
 		}
 
-		default_scheme = specificData.default_scheme;
+		defaultScheme = specificData.default_scheme;
 		(await response.json()).forEach(message => {
 			if (!registerPage(message, true)) {
 				console.warn("[about:about Button]", "Failed to register page:", message.url);
@@ -94,15 +106,18 @@ function getData(config) {
 })();
 
 /**
- * @param {Object} message
+ * @param {AboutPage} message
  * @param {Boolean} privileged
+ *
  * @return {undefined}
  */
 function registerPage(message, privileged) {
+	/** @type AboutPage */
 	var data = {
 		url: new String(message.url),
 		icon: new String((typeof message.icon !== undefined && typeof message.icon !== null) ? message.icon : ""),
 		privileged: new Boolean(message.privileged),
+		description: "",
 		alias: []
 	};
 
@@ -116,6 +131,8 @@ function registerPage(message, privileged) {
 	let path = removeProtocolFromURL(data.url);
 	let isNew = true;
 	if (privileged) {
+		if (message.description)
+			data.description = new String(message.description);
 		for (let i = 0; i < ABOUT_PAGES.length; i++) {
 			let d = ABOUT_PAGES[i];
 			if (path.localeCompare(removeProtocolFromURL(d.url), {sensitivity: "accent", numeric: true}) === 0) {
@@ -130,6 +147,7 @@ function registerPage(message, privileged) {
 		for (let d in ABOUT_PAGES) {
 			if (path.localeCompare(removeProtocolFromURL(d.url), {sensitivity: "accent", numeric: true}) === 0) {
 				isNew = false;
+				data = d;
 				break;
 			}
 		}
@@ -144,11 +162,15 @@ function registerPage(message, privileged) {
 			});
 		});
 		browser.runtime.sendMessage({
-			type: "pagesChanged"
+			method: "pagesChanged"
 		}).catch(error => {
 			if (!error.message.startsWith("Could not establish connection. Receiving end does not exist."))
 				console.error(error);
 		});
+	}
+
+	if (!privileged && !data.description && message.description) {
+		data.description = new String(message.description);
 	}
 	return isNew;
 }
@@ -164,10 +186,10 @@ function removeProtocolFromURL(url) {
 }
 
 browser.runtime.onMessage.addListener((message, sender, resolve) => {
-	let messageType = String(message.type);
+	let messageType = String(message.method);
 	switch (messageType) {
 		case "registerPage": {
-			let result = registerPage(message, true);
+			let result = registerPage(message.data, true);
 			if (typeof resolve === "function") {
 				resolve(result);	// Blame Mozilla's WebExtension Polyfill,
 				return;	// which implements this differently from Firefox.
@@ -185,7 +207,7 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 			}).then(showDisabledButtons => {
 				return {
 					pages: JSON.stringify(ABOUT_PAGES),
-					default_scheme: default_scheme,
+					defaultScheme: defaultScheme,
 					showDisabledButtons: showDisabledButtons
 				};
 			});
@@ -196,10 +218,10 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 // browser.runtime.onMessageExternal is only supported from FF 54.0+
 if (browser.runtime.onMessageExternal) {
 	browser.runtime.onMessageExternal.addListener((message, sender, resolve) => {
-		let messageType = String(message.type);
+		let messageType = String(message.method);
 		switch (messageType) {
 			case "registerPage": {
-				let result = registerPage(message, false);
+				let result = registerPage(message.data, false);
 				if (typeof resolve === "function") {
 					resolve(result);	// Blame Mozilla's WebExtension Polyfill,
 					return;	// which implements this differently from Firefox.
@@ -207,7 +229,7 @@ if (browser.runtime.onMessageExternal) {
 					return result;	// Keep the Firefox and Polyfill implementation identical API-wise
 				}
 			} default: {
-				throw "Invalid message type: " + messageType;
+				throw "Invalid message method: " + messageType;
 			}
 		}
 	});

@@ -16,6 +16,22 @@
  */
 /* global browser */
 
+/**
+ * @typedef {Object} AboutPage
+ * @property {String} url The page URL
+ * @property {?String} icon The page icon
+ * @property {Boolean} privileged If the page is privileged
+ * @property {?String} description The description
+ * @property {?String[]} alias All the URL aliases of this page
+ */
+/**
+ * @typedef {Object} BrowserInfo
+ * @property {String} name
+ * @property {String} vendor
+ * @property {String} version
+ * @property {String} buildID
+ */
+
 /** Used to toggle visibility of debug button. @type Boolean */
 let isDebug = false;
 
@@ -28,6 +44,8 @@ let isDebug = false;
  * @type Boolean
  */
 let usePagesShim = true;
+
+/** @type Object */
 let pagesShims = {
 	"Firefox": ["about:addons", "about:credits"]
 };
@@ -44,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 	browser.runtime.onMessage.addListener((message, sender, resolve) => {
-		let messageType = String(message.type);
+		let messageType = String(message.method);
 		switch (messageType) {
 			case "pagesChanged": {
 				reload();
@@ -76,9 +94,9 @@ document.addEventListener("DOMContentLoaded", () => {
 /**
  * Checks if the suppplied page is shimmed.
  *
- * @param {String} page The page to check.
+ * @param {AboutPage} page The page to check.
  * @param {String} url The page’s url with the protocol to check.
- * @param {Object} browserInfo The browser info.
+ * @param {BrowserInfo} browserInfo The browser info.
  *
  * @return {Boolean} If the page is shimmed.
  */
@@ -137,14 +155,18 @@ async function reload() {
 	status.textContent = "";
 
 	try {
+		/** @type AboutPage[] */
 		let pages;
-		let default_scheme;
+		/** @type String */
+		let defaultScheme;
+		/** @type Boolean */
 		let showDisabledButtons;
+		/** @type BrowserInfo */
 		let browserInfo;
 
-		await (browser.runtime.sendMessage({ type: "getPages" }).then(response => {
+		await (browser.runtime.sendMessage({ method: "getPages" }).then(response => {
 			pages	= JSON.parse(response.pages);
-			default_scheme	= response.default_scheme;
+			defaultScheme	= response.defaultScheme;
 			showDisabledButtons	= response.showDisabledButtons || false;
 		}));
 
@@ -169,13 +191,14 @@ async function reload() {
 
 		pages.forEach(page => {
 			let disabled = false;
-			let url = page.url.includes(':') ? page.url : default_scheme + page.url;
+			let url = page.url.includes(':') ? page.url : defaultScheme + page.url;
 			if (page.privileged && !isShimmed(page, url, browserInfo)) {
 				disabled = true;
 				if (!showDisabledButtons)
 					return;
 			}
 
+			/** @type HTMLButtonElement */
 			let button = document.createElement("button");
 			let img = generateImg(page.icon);
 			button.setAttribute("type", "button");
@@ -193,13 +216,26 @@ async function reload() {
 					browser.tabs.create({url: "/redirect/redirect.html?dest=" + url});
 				}
 			});
-			if (page.alias.length > 0) {
-				let title = "Aliases:";
-				page.alias.forEach(alias => {
-					title += `\n${alias.includes(':') ? alias : default_scheme + alias}`;
-				});
-				button.setAttribute("title", title);
+			/** @type String */
+			let title = "";
+			if (page.description.length > 0) {
+				if (title.length > 0)
+					title += `\n${page.description}`;
+				else
+					title = page.description;
 			}
+			if (page.alias.length > 0) {
+				let aliases = "Aliases:";
+				page.alias.forEach(alias => {
+					aliases += `\n${alias.includes(':') ? alias : defaultScheme + alias}`;
+				});
+				if (title.length > 0)
+					title += `\n${aliases}`;
+				else
+					title = aliases;
+			}
+			if (title.length > 0)
+				button.setAttribute("title", title);
 			content.appendChild(button);
 		});
 
