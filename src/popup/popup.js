@@ -133,9 +133,33 @@ function isShimmed(page, url, browserInfo) {
  */
 function i18nInit() {
 	document.getElementById("open-options").appendChild(document.createTextNode(browser.i18n.getMessage("popup_openOptions")));
-	browser.runtime.sendMessage({ method: "getScheme" }).then(protocol => {
-		document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", protocol)));
+	browser.runtime.sendMessage({ method: "getScheme" }).then(defaultScheme => {
+		document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", defaultScheme)));
+		let main = document.getElementById("main");
+			main.appendChild(noKnownPages(defaultScheme, true));
+		document.getElementById("status-separator").classList.add("hidden");
 	});
+}
+
+/**
+ * @param {String} defaultScheme
+ * @param {Boolean} showDisabledButtons
+ *
+ * @returns {HTMLDivElement}
+ */
+function noKnownPages(defaultScheme, showDisabledButtons) {
+	if (typeof showDisabledButtons === undefined)
+		showDisabledButtons = true;
+
+	let panel = document.createElement("div");
+	panel.classList.add("panel-section", "panel-section-header");
+
+	let protocol = document.createElement("div");
+	protocol.classList.add("text-section-header");
+	protocol.appendChild(document.createTextNode(browser.i18n.getMessage(`popup_unsupported_${showDisabledButtons ? "unknown" : "privilegedOnly"}`, defaultScheme)));
+
+	panel.appendChild(protocol);
+	return panel;
 }
 
 /**
@@ -144,8 +168,9 @@ function i18nInit() {
 async function reload() {
 	let main = document.getElementById("main");
 
-	let statusContainer = document.getElementById("status-container");
 	let status = document.getElementById("status");
+	let statusContainer = document.getElementById("status-container");
+	let statusSeparator = document.getElementById("status-separator");
 
 	status.textContent = "";
 	statusContainer.classList.add("hidden");
@@ -270,6 +295,15 @@ async function reload() {
 				main.appendChild(content);
 			}
 		});
+		if (!main.hasChildNodes()) {
+			let pages = 0;
+			categories.forEach(category => (pages += category.content.length || 0));
+			console.log(pages);
+			main.appendChild(noKnownPages(defaultScheme, !(!showDisabledButtons && pages > 0)));
+			statusSeparator.classList.add("hidden");
+		} else {
+			statusSeparator.classList.remove("hidden");
+		}
 	} catch (error) {
 		console.warn(error);
 		let statusMessage = document.createElement("div");

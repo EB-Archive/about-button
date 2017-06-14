@@ -67,7 +67,10 @@ function getData(config) {
 		 * @property {String} default_scheme
 		 * @property {String} data
 		 */
-		/** @type BrowserData */
+		/**
+		 * @type BrowserData
+		 * @param {Response} r
+		 */
 		let browserData = await getData("browsers").then(r => r.json());
 		/** @type BrowserData$Browser */
 		let specificData = browserData.browsers[browserInfo.name];

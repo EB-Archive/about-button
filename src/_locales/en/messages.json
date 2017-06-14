@@ -10,6 +10,14 @@
 
 	"popup_openOptions":	{ "message":	"Open Extension Options"	},
 	"popup_privilegedHidden":	{ "message":	"Privileged pages have been hidden"	},
+	"popup_unsupported_unknown": {
+		"message":	"No known $protocol$ pages found",
+		"placeholders":	{ "protocol": { "content" : "$1" }}
+	},
+	"popup_unsupported_privilegedOnly": {
+		"message":	"No unprivileged $protocol$ pages found",
+		"placeholders":	{ "protocol": { "content" : "$1" }}
+	},
 	"popup_debugButton": {
 		"message":	"Toggle privileged\n$protocol$ pages visibility",
 		"placeholders":	{ "protocol": { "content" : "$1" }}
