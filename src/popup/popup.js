@@ -162,10 +162,31 @@ function noKnownPages(defaultScheme, showDisabledButtons) {
 	return panel;
 }
 
+var reloadCounter = 0;
+
 /**
  * (Re-)load the current popup.
  */
 async function reload() {
+	if (reloadCounter++ > 0) {
+		if (reloadCounter > 2)
+			reloadCounter = 2;
+		return;
+	}
+	let result = await _reload();
+	if (reloadCounter > 1) {
+		result = await _reload();
+	}
+	reloadCounter = 0;
+	return result;
+}
+
+/**
+ * Actually (re-)load the current popup.
+ *
+ * @private
+ */
+async function _reload() {
 	let main = document.getElementById("main");
 
 	let status = document.getElementById("status");
