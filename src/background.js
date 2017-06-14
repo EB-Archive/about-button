@@ -92,15 +92,19 @@ function getData(config) {
 
 		defaultScheme = specificData.default_scheme;
 		(await response.json()).forEach(category => {
-			category.content.forEach(page => {
-				page.category = {
-					category:	category.category,
-					priority:	category.priority
-				};
-				if (!registerPage(page, true)) {
-					console.warn("[about:about Button]", "Failed to register page:", page.url);
-				}
-			})
+			if (category.content) {
+				category.content.forEach(page => {
+					page.category = {
+						category:	category.category,
+						priority:	category.priority
+					};
+					if (!registerPage(page, true)) {
+						console.warn("[about:about Button]", "Failed to register page:", page.url);
+					}
+				});
+			} else {
+				getCategory(category.category.toLowerCase(), category.priority);
+			}
 		});
 	};
 
