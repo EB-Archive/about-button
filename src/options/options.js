@@ -41,7 +41,7 @@ function i18nInit() {
 function saveOptions() {
 	browser.storage.local.set({
 		showDisabledButtons: element_showDisabledButtons.checked
-	}).catch((error) => {
+	}).catch(error => {
 		console.error("Could not save options");
 		console.error(error);
 	});
