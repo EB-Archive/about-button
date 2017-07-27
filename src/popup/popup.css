@@ -20,25 +20,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* +----------+ */
 
 html, body {
-/*	width: 100%;*/
 	overflow-x: hidden;
 	margin: 0px;
 }
 
 body {
-/*	margin: 4px;*/
+	max-height: 600px;
 }
 
 button, #main .panel-list-item, #open-options {
 	text-align: left;
 	white-space: nowrap;
-}
-
-button:disabled {
-	background-color: #CCC;
-	border: solid;
-	border-width: 1px;
-	border-color: #777;
 }
 
 /* +---------+ */
@@ -58,11 +50,6 @@ button:disabled {
 /* | IDs | */
 /* +-----+ */
 
-#header {
-/*	margin: 4px;
-	padding-bottom: 4px;*/
-}
-
 #showDisabledButtons {
 	text-align: center;
 	height: calc(100% + 8px);
@@ -71,7 +58,8 @@ button:disabled {
 }
 
 #main {
-	margin-right: 16px !important;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 #main > div {
@@ -93,13 +81,6 @@ button:disabled {
 
 #main .panel-list-item, #main .panel-section, #open-options {
 	width: calc(100% + 16px) !important;
-}
-
-#footer {
-/*	margin-top:	0px;
-	margin-left:	4px;
-	margin-right:	4px;
-	margin-bottom:	4px;*/
 }
 
 #open-options {
