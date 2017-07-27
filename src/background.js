@@ -41,6 +41,7 @@
 /** All the registered pages. @type Category[] */
 const ABOUT_PAGES	= [];
 var defaultScheme	= null;
+var dataName	= null;
 
 /**
  * @param {String} config The name of the JSON config file in the config directory
@@ -78,14 +79,16 @@ function getData(config) {
 		/** @type Response */
 		let response = null;
 		if (specificData) {
-			response = await getData(specificData.data);
+			dataName = specificData.data;
+			response = await getData(dataName);
 		} else {
 			specificData = browserData.default;
 		}
 
-		if (response === null || response.status !== 200) {
-			response = await getData(browserData.default.data);
-			if (response.status !== 200) {
+		if (response === null || !response.ok) {
+			dataName = browserData.default.data;
+			response = await getData(dataName);
+			if (!response.ok) {
 				throw new Error("Cannot load about: URL configuration");
 			}
 		}
@@ -271,9 +274,10 @@ browser.runtime.onMessage.addListener((message, sender, resolve) => {
 				return false;
 			}).then(showDisabledButtons => {
 				return {
-					categories: JSON.stringify(ABOUT_PAGES),
-					defaultScheme: defaultScheme,
-					showDisabledButtons: showDisabledButtons
+					categories:	JSON.stringify(ABOUT_PAGES),
+					dataName:	dataName,
+					defaultScheme:	defaultScheme,
+					showDisabledButtons:	showDisabledButtons
 				};
 			});
 		} case "getScheme": {

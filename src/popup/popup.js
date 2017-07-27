@@ -200,6 +200,8 @@ async function _reload() {
 		/** @type Category[] */
 		let categories;
 		/** @type String */
+		let dataName;
+		/** @type String */
 		let defaultScheme;
 		/** @type Boolean */
 		let showDisabledButtons;
@@ -208,6 +210,7 @@ async function _reload() {
 
 		let getPagesPromise = (browser.runtime.sendMessage({ method: "getPages" }).then(response => {
 			categories	= JSON.parse(response.categories);
+			dataName	= response.dataName;
 			defaultScheme	= response.defaultScheme;
 			showDisabledButtons	= response.showDisabledButtons || false;
 		}));
@@ -293,12 +296,14 @@ async function _reload() {
 					}
 				});
 				/** @type String */
-				let title = "";
-				if (page.description.length > 0) {
+				let title	= "";
+				let descriptionKey	= `url_${dataName}_${page.url}`;
+				let description	= browser.i18n.getMessage(descriptionKey);
+				if (description.length > 0 && description !== descriptionKey) {
 					if (title.length > 0)
-						title += `\n${page.description}`;
+						title += `\n${description}`;
 					else
-						title = page.description;
+						title = description;
 				}
 				if (page.alias.length > 0) {
 					let aliases = "Aliases:";

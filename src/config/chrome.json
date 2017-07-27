@@ -40,6 +40,7 @@
 			{"url": "newtab",	"icon": "tab",	"privileged": false},
 			{"url": "omnibox",	"icon": "textfield",	"privileged": false},
 			{"url": "password-manager-internals",	"icon": "textfield-key",	"privileged": false},
+			{"url": "plugins",	"icon": "plugin",	"privileged": false, "shim": "settings?section=plugins"},
 			{"url": "policy",	"icon": "receipt",	"privileged": false},
 			{"url": "predictors",	"icon": "textfield-rename",	"privileged": false},
 			{"url": "print",	"icon": "printer",	"privileged": false},
