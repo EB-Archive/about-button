@@ -206,7 +206,7 @@ async function _reload() {
 		/** @type BrowserInfo */
 		let browserInfo;
 
-		await (browser.runtime.sendMessage({ method: "getPages" }).then(response => {
+		let getPagesPromise = (browser.runtime.sendMessage({ method: "getPages" }).then(response => {
 			categories	= JSON.parse(response.categories);
 			defaultScheme	= response.defaultScheme;
 			showDisabledButtons	= response.showDisabledButtons || false;
@@ -226,6 +226,8 @@ async function _reload() {
 				buildID: "Unknown"
 			};
 		}
+
+		await getPagesPromise;
 
 		if (!showDisabledButtons) {
 			let statusMessage = document.createElement("div");
@@ -273,20 +275,21 @@ async function _reload() {
 				button.setAttribute("type", "button");
 				button.classList.add("panel-list-item");
 				if (disabled) {
-					button.setAttribute("disabled", true);
 					button.classList.add("disabled");
 				}
 				button.appendChild(img);
 				button.appendChild(document.createTextNode(url));
 				button.addEventListener("click", evt => {
-					if (!page.privileged) {
-						browser.tabs.create({url: url});
-					} else if (usePagesShim && url === "about:addons") {
-						browser.runtime.openOptionsPage();
-					} else if (usePagesShim && page.shim) {
-						browser.tabs.create({url: page.shim});
-					} else {
-						browser.tabs.create({url: "/redirect/redirect.html?dest=" + url});
+					if (!button.classList.contains("disabled")) {
+						if (!page.privileged) {
+							browser.tabs.create({url: url});
+						} else if (usePagesShim && url === "about:addons") {
+							browser.runtime.openOptionsPage();
+						} else if (usePagesShim && page.shim) {
+							browser.tabs.create({url: (page.shim.includes(':') ? page.shim : defaultScheme + page.shim)});
+						} else {
+							browser.tabs.create({url: "/redirect/redirect.html?dest=" + url});
+						}
 					}
 				});
 				/** @type String */
