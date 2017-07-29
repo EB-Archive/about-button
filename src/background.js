@@ -29,6 +29,7 @@
  * @property {Boolean} privileged If the page is privileged
  * @property {?String} description The description
  * @property {?String[]} alias All the URL aliases of this page
+ * @property {?Object} query The optional query string parameters
  */
 /**
  * @typedef {Object} BrowserInfo
@@ -193,6 +194,22 @@ function registerPage(message, privileged) {
 		let length = new Number(message.alias.length);
 		for (let i = 0; i < length; i++) {
 			data.alias[i] = new String(message.alias[i]);
+		}
+	}
+
+	if (message.query) {
+		data.query = {};
+		for (let query in message.query) {
+			let values = message.query[query];
+			let copy = [];
+			data.query[String(query)] = copy;
+			for (let i = 0; i < values.length; i++) {
+				let value = values[i];
+				copy[i] = {
+					value: String(value.value),
+					icon: String((typeof value.icon !== undefined && typeof value.icon !== null) ? value.icon : "")
+				};
+			}
 		}
 	}
 

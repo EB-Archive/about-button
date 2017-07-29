@@ -30,6 +30,11 @@
  * @property {?String[]} alias All the URL aliases of this page
  */
 /**
+ * @typedef {Object} AboutPageQuery
+ * @property {String} value The value of the query
+ * @property {?String} icon The query icon
+ */
+/**
  * @typedef {Object} BrowserInfo
  * @property {String} name
  * @property {String} vendor
@@ -275,7 +280,6 @@ async function _reload() {
 
 				let button = document.createElement("div");
 				let img = generateImg(page.icon);
-				button.setAttribute("type", "button");
 				button.classList.add("panel-list-item");
 				if (disabled) {
 					button.classList.add("disabled");
@@ -291,32 +295,88 @@ async function _reload() {
 						} else if (usePagesShim && page.shim) {
 							browser.tabs.create({url: (page.shim.includes(':') ? page.shim : defaultScheme + page.shim)});
 						} else {
-							browser.tabs.create({url: "/redirect/redirect.html?dest=" + url});
+							browser.tabs.create({url: "/redirect/redirect.html?dest=" + encodeURIComponent(url)});
 						}
 					}
 				});
 				/** @type String */
 				let title	= "";
-				let descriptionKey	= `url_${dataName}_${page.url}`;
+				let descriptionKey	= `page_${dataName}_${page.url}`;
 				let description	= browser.i18n.getMessage(descriptionKey);
 				if (description.length > 0 && description !== descriptionKey) {
-					if (title.length > 0)
+					if (title.length > 0) {
 						title += `\n${description}`;
-					else
+					} else {
 						title = description;
+					}
+				}
+				if (page.query) {
+					{
+						let hasQuery = browser.i18n.getMessage("popup_tooltip_hasQuery");
+						if (title.length > 0) {
+							title += `\n${hasQuery}`;
+						} else {
+							title = hasQuery;
+						}
+					}
+					let menuId = `${url}-menu`;
+					let menu = document.createElement("menu");
+					menu.setAttribute("id", menuId);
+					menu.setAttribute("type", "context");
+					for (let query in page.query) {
+						if (menu.hasChildNodes()) {
+							menu.appendChild(document.createElement("hr"));
+						}
+						/** @type AboutPageQuery[] */
+						let values = page.query[query];
+						/** @param {AboutPageQuery} value */
+						values.forEach(value => {
+							let menuitem = document.createElement("menuitem");
+							let menuitemDescriptionKey = `page_${dataName}_${page.url}_${query}_${value.value}`;
+							let menuitemDescription = browser.i18n.getMessage(menuitemDescriptionKey);
+							let queryUrl = `${url}?${query}=${value.value}`;
+							if (menuitemDescription.length > 0 && menuitemDescription !== menuitemDescriptionKey) {
+								menuitem.setAttribute("label", menuitemDescription);
+							} else {
+								menuitem.setAttribute("label", queryUrl);
+							}
+							if (value.icon && value.icon.length > 0) {
+								menuitem.setAttribute("icon", `/icons/256/${value.icon}.png`)
+							}
+							if (disabled) {
+								menuitem.setAttribute("disabled", true);
+							}
+							menuitem.addEventListener("click", evt => {
+								if (!page.privileged) {
+									browser.tabs.create({url: queryUrl});
+								} else if (usePagesShim && queryUrl === "about:addons") {
+									browser.runtime.openOptionsPage();
+								} else if (usePagesShim && page.shim) {
+									browser.tabs.create({url: (`${page.shim.includes(':') ? page.shim : defaultScheme + page.shim}?${query}=${value.value}`)});
+								} else {
+									browser.tabs.create({url: "/redirect/redirect.html?dest=" + encodeURIComponent(queryUrl)});
+								}
+							});
+							menu.appendChild(menuitem);
+						});
+					}
+					button.appendChild(menu);
+					button.setAttribute("contextmenu", menuId);
 				}
 				if (page.alias.length > 0) {
-					let aliases = "Aliases:";
+					let aliases = browser.i18n.getMessage("popup_tooltip_aliases");
 					page.alias.forEach(alias => {
 						aliases += `\n${alias.includes(':') ? alias : defaultScheme + alias}`;
 					});
-					if (title.length > 0)
+					if (title.length > 0) {
 						title += `\n${aliases}`;
-					else
+					} else {
 						title = aliases;
+					}
 				}
-				if (title.length > 0)
+				if (title.length > 0) {
 					button.setAttribute("title", title);
+				}
 				content.appendChild(button);
 			});
 			if (content.hasChildNodes()) {

@@ -34,7 +34,7 @@ function parseQuery(query) {
 }
 
 var error;
-let dest = parseQuery(window.location.search).dest;
+let dest = decodeURIComponent(parseQuery(window.location.search).dest);
 
 if (dest) {
 	try {

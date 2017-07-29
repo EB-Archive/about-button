@@ -24,6 +24,10 @@ html, body {
 	margin: 0px;
 }
 
+img {
+	pointer-events: none;
+}
+
 body {
 	max-height: 600px;
 }
