@@ -2,6 +2,10 @@
 	"extensionName":	{ "message":	"about:about Button"	},
 	"extensionName_chrome":	{ "message":	"chrome://about Button"	},
 	"extensionName_opera":	{ "message":	"opera://about Button"	},
+	"extensionName_wildcard": {
+		"message":	"$protocol$about Button",
+		"placeholders":	{ "protocol": { "content" : "$1" }}
+	},
 
 	"description":	{ "message":	"A WebExtension to quickly open about:* pages."	},
 	"description_chrome":	{ "message":	"A WebExtension to quickly open chrome://* pages."	},
@@ -10,6 +14,10 @@
 	"browserAction":	{ "message":	"about:about"	},
 	"browserAction_chrome":	{ "message":	"chrome://about"	},
 	"browserAction_opera":	{ "message":	"opera://about"	},
+	"browserAction_wildcard": {
+		"message":	"$protocol$about",
+		"placeholders":	{ "protocol": { "content" : "$1" }}
+	},
 
 	"popup_openOptions":	{ "message":	"Open Extension Options"	},
 	"popup_privilegedHidden":	{ "message":	"Privileged pages have been hidden"	},
@@ -31,6 +39,10 @@
 	"category_general":	{ "message":	"General"	},
 	"category_debug":	{ "message":	"Debugging"	},
 
+	"options_options": {
+		"message":	"$protocol$about Button Options",
+		"placeholders":	{ "protocol": { "content" : "$1" }}
+	},
 	"options_header":	{ "message":	"Options"	},
 	"options_showDisabledButtons":	{ "message":	"Show privileged pages\n(currently can’t be opened from the menu)"	},
 

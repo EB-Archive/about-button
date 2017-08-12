@@ -15,17 +15,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 	<head>
 		<meta charset="UTF-8"/>
-		<title>about:about</title>
+		<title data-i18n="browserAction_wildcard" data-i18n-substitution="[&quot;$protocol$&quot;]"></title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<link rel="stylesheet" type="text/css" href="popup.css"/>
+		<script src="/shared.js"></script>
 		<script src="popup.js"></script>
 	</head>
 	<body>
 		<!-- Debug button, visibility controlled by variable `isDebug` in `popup.js` -->
-		<header id="header"><button id="showDisabledButtons"></button></header>
+		<header id="header"><button id="showDisabledButtons" data-i18n="popup_debugButton" data-i18n-substitution="[&quot;$protocol$&quot;]"></button></header>
 
 		<!-- Content -->
 		<main id="main"></main>
@@ -36,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			<div id="status" class="panel-section panel-section-list"></div>
 		</div>
 		<footer id="footer" class="panel-section panel-section-footer">
-			<div id="open-options" class="panel-section-footer-button"></div>
+			<div id="open-options" class="panel-section-footer-button" data-i18n="popup_openOptions"></div>
 		</footer>
 	</body>
 </html>

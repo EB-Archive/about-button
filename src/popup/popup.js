@@ -136,13 +136,15 @@ function isShimmed(page, url, browserInfo) {
  *
  * @return {undefined}
  */
-function i18nInit() {
-	document.getElementById("open-options").appendChild(document.createTextNode(browser.i18n.getMessage("popup_openOptions")));
-	browser.runtime.sendMessage({ method: "getScheme" }).then(defaultScheme => {
-		document.getElementById("showDisabledButtons").appendChild(document.createTextNode(browser.i18n.getMessage("popup_debugButton", defaultScheme)));
-		let main = document.getElementById("main");
-			main.appendChild(noKnownPages(defaultScheme, true));
-		document.getElementById("status-separator").classList.add("hidden");
+async function i18nInit() {
+	let protocol = await browser.runtime.sendMessage({ method: "getScheme" });
+	let main = document.getElementById("main");
+
+	document.getElementById("main").appendChild(noKnownPages(protocol, true));
+	document.getElementById("status-separator").classList.add("hidden");
+
+	processI18n({
+		protocol: protocol
 	});
 }
 

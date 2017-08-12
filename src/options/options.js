@@ -19,6 +19,19 @@
 /** @type HTMLInputElement */
 let element_showDisabledButtons;
 
+/**
+ * Applies internationalization to the current page.
+ *
+ * @return {undefined}
+ */
+async function i18nInit() {
+	let protocol = await browser.runtime.sendMessage({ method: "getScheme" });
+
+	processI18n({
+		protocol: protocol
+	});
+}
+
 function reload() {
 	browser.storage.local.get({
 		showDisabledButtons: false

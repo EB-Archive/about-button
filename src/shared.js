@@ -16,16 +16,41 @@
  */
 /* global browser */
 
-/**
- * Applies internationalization to the current page.
- *
- * @returns {undefined}
- */
-async function i18nInit() {
+async function processI18n(subData) {
+	function processSubstitution(translatable) {
+		let substitution = [];
+		if (translatable.dataset.i18nSubstitution) {
+			substitution = JSON.parse(translatable.dataset.i18nSubstitution);
+		}
+		if ((substitution.length > 0) && (subData !== null) && (typeof subData === "object")) {
+			substitution = substitution.map(sub => {
+				switch (sub) {
+					case "$protocol$":	return subData["protocol"] || "about:";
+					default:	return sub;
+				}
+			});
+		}
+		return substitution;
+	}
+
 	document.querySelectorAll("[data-i18n]").forEach(translatable => {
-		let text = browser.i18n.getMessage(translatable.dataset.i18n);
+		let text = browser.i18n.getMessage(translatable.dataset.i18n, processSubstitution(translatable));
 		if (text.length > 0) {
 			insertI18n(text, translatable);
+		}
+	});
+
+	document.querySelectorAll("[data-i18n-label]").forEach(translatable => {
+		let text = browser.i18n.getMessage(translatable.dataset.i18nLabel, processSubstitution(translatable));
+		if (text.length > 0) {
+			translatable.setAttribute("label", text);
+		}
+	});
+
+	document.querySelectorAll("[data-i18n-title]").forEach(translatable => {
+		let text = browser.i18n.getMessage(translatable.dataset.i18nTitle, processSubstitution(translatable));
+		if (text.length > 0) {
+			translatable.setAttribute("title", text);
 		}
 	});
 }
