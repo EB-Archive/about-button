@@ -1,12 +1,15 @@
 {
-	"extensionName_firefox":	{ "message":	"about:about Button"	},
+	"extensionName":	{ "message":	"about:about Button"	},
 	"extensionName_chrome":	{ "message":	"chrome://about Button"	},
+	"extensionName_opera":	{ "message":	"opera://about Button"	},
 
-	"description_firefox":	{ "message":	"A WebExtension to quickly open about:* pages."	},
+	"description":	{ "message":	"A WebExtension to quickly open about:* pages."	},
 	"description_chrome":	{ "message":	"A WebExtension to quickly open chrome://* pages."	},
+	"description_opera":	{ "message":	"A WebExtension to quickly open opera://* pages."	},
 
-	"browserAction_firefox":	{ "message":	"about:about"	},
+	"browserAction":	{ "message":	"about:about"	},
 	"browserAction_chrome":	{ "message":	"chrome://about"	},
+	"browserAction_opera":	{ "message":	"opera://about"	},
 
 	"popup_openOptions":	{ "message":	"Open Extension Options"	},
 	"popup_privilegedHidden":	{ "message":	"Privileged pages have been hidden"	},

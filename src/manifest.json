@@ -7,10 +7,10 @@
 	},
 
 	"manifest_version":	2,
-	"name":	"__MSG_extensionName_firefox__",
-	"version":	"0.1.14",
+	"name":	"__MSG_extensionName__",
+	"version":	"0.1.15",
 	"author":	"ExE Boss",
-	"description":	"__MSG_description_firefox__",
+	"description":	"__MSG_description__",
 	"default_locale":	"en",
 
 	"permissions": [
@@ -37,7 +37,7 @@
 	},
 	"browser_action": {
 		"browser_style":	true,
-		"default_title":	"__MSG_browserAction_firefox__",
+		"default_title":	"__MSG_browserAction__",
 		"default_popup":	"popup/popup.html",
 		"default_icon": {
 			"16":	"icons/16/cog.png",

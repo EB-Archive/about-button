@@ -9,7 +9,7 @@
 			{"url": "addons",	"icon": "plugin",	"privileged": true},
 			{"url": "about:blank",	"icon": "page-white",	"privileged": false},
 			{"url": "buildconfig",	"icon": "building",	"privileged": true},
-			{"url": "cache",	"icon": "drive",	"privileged": true, "query":	{"storage": [{"value": "disk", "icon": "drive"}, {"value": "memory", "icon": "memory"}, {"value": "appcache", "icon": "application"}]}},
+			{"url": "cache",	"icon": "drive",	"privileged": true,	"query":	{"storage": [{"value": "disk", "icon": "drive"}, {"value": "memory", "icon": "memory"}, {"value": "appcache", "icon": "application"}]}},
 			{"url": "checkerboard",	"icon": "chart-line",	"privileged": true},
 			{"url": "config",	"icon": "wrench",	"privileged": true},
 			{"url": "credits",	"icon": "vcard",	"privileged": true,	"shim": "https://www.mozilla.org/credits/"},
