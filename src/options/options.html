@@ -15,17 +15,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 	<head>
 		<meta charset="UTF-8"/>
 		<title>Firefox about:about Button Options</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="stylesheet" type="text/css" href="/browser-style-supplement/extension-options.css"/>
+		<script src="../shared.js"></script>
 		<script src="options.js"></script>
 	</head>
 	<body>
-		<div class="browser-style">
-			<input id="showDisabledButtons" type="checkbox"/>
-			<label id="showDisabledButtons_label" for="showDisabledButtons"></label>
+		<h1 class="browser-style" data-i18n="options_header"></h1>
+		<div class="options-grid browser-style">
+			<label for="showDisabledButtons" class="browser-style" data-i18n="options_showDisabledButtons"></label>
+			<span class="browser-style"><input id="showDisabledButtons" type="checkbox"/><label for="showDisabledButtons"></label></span>
 		</div>
 	</body>
 </html>

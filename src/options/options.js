@@ -29,15 +29,6 @@ function reload() {
 	});
 }
 
-/**
- * Applies internationalization to the options page.
- *
- * @returns {undefined}
- */
-function i18nInit() {
-	document.getElementById("showDisabledButtons_label").appendChild(document.createTextNode(browser.i18n.getMessage("options_showDisabledButtons")));
-}
-
 function saveOptions() {
 	browser.storage.local.set({
 		showDisabledButtons: element_showDisabledButtons.checked

@@ -31,7 +31,8 @@
 	"category_general":	{ "message":	"General"	},
 	"category_debug":	{ "message":	"Debugging"	},
 
-	"options_showDisabledButtons":	{ "message":	"Show privileged pages (currently can’t be opened from the menu)"	},
+	"options_header":	{ "message":	"Options"	},
+	"options_showDisabledButtons":	{ "message":	"Show privileged pages\n(currently can’t be opened from the menu)"	},
 
 	"page_firefox_":	{ "message":	"Displays version and build information and links to the contributors, licensing information and build configurtion."	},
 	"page_firefox_about":	{ "message":	"Provides an overview of all about: pages available for your current Firefox version."	},
