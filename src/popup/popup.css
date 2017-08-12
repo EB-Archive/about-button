@@ -62,16 +62,23 @@ button, #main .panel-list-item, #open-options {
 }
 
 #main {
-	overflow-y: auto;
-	overflow-x: hidden;
+	overflow-y:	auto;
+	overflow-x:	hidden;
 }
 
 #main > div {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-/*	margin: 4px;*/
 	border-spacing: 8px;
+}
+
+#main > .panel-section-list {
+	margin-right:	16px;
+}
+
+#main > .panel-section-header {
+	padding-right:	32px;
 }
 
 #main > div > button {
