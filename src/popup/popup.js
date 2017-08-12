@@ -269,7 +269,7 @@ async function _reload() {
 			headerText.appendChild(document.createTextNode(categoryName));
 			header.appendChild(headerText);
 
-			let content = document.createElement("div");
+			let content = document.createElement("section");
 			content.classList.add("panel-section", "panel-section-list");
 			category.content.forEach(page => {
 				let disabled = false;
@@ -297,7 +297,7 @@ async function _reload() {
 						} else if (usePagesShim && page.shim) {
 							browser.tabs.create({url: (page.shim.includes(':') ? page.shim : defaultScheme + page.shim)});
 						} else {
-							browser.tabs.create({url: "/redirect/redirect.html?dest=" + encodeURIComponent(url)});
+							browser.tabs.create({url: "/redirect/redirect.xhtml?dest=" + encodeURIComponent(url)});
 						}
 					}
 				});
@@ -356,7 +356,7 @@ async function _reload() {
 								} else if (usePagesShim && page.shim) {
 									browser.tabs.create({url: (`${page.shim.includes(':') ? page.shim : defaultScheme + page.shim}?${query}=${value.value}`)});
 								} else {
-									browser.tabs.create({url: "/redirect/redirect.html?dest=" + encodeURIComponent(queryUrl)});
+									browser.tabs.create({url: "/redirect/redirect.xhtml?dest=" + encodeURIComponent(queryUrl)});
 								}
 							});
 							menu.appendChild(menuitem);

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <!--
 Copyright (C) 2017 ExE Boss
@@ -18,9 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 	<head>
 		<meta charset="UTF-8"/>
-		<title>Redirecting…</title>
+		<title data-i18n="options_options" data-i18n-substitution="[&quot;$protocol$&quot;]"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-		<script src="redirect.js"></script>
+		<link rel="stylesheet" type="text/css" href="/browser-style-supplement/extension-options.css"/>
+		<script src="/shared.js"/>
+		<script src="options.js"/>
 	</head>
-	<body></body>
+	<body>
+		<h1 class="browser-style" data-i18n="options_header"/>
+		<div class="options-grid browser-style">
+			<label for="showDisabledButtons" class="browser-style" data-i18n="options_showDisabledButtons"/>
+			<span class="browser-style"><input id="showDisabledButtons" type="checkbox"/><label for="showDisabledButtons"/></span>
+		</div>
+	</body>
 </html>

@@ -33,12 +33,12 @@
 	},
 	"options_ui": {
 		"browser_style":	true,
-		"page":	"options/options.html"
+		"page":	"options/options.xhtml"
 	},
 	"browser_action": {
 		"browser_style":	true,
 		"default_title":	"__MSG_browserAction__",
-		"default_popup":	"popup/popup.html",
+		"default_popup":	"popup/popup.xhtml",
 		"default_icon": {
 			"16":	"icons/16/cog.png",
 			"24":	"icons/24/cog.png",
