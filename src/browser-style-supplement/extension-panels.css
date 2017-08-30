@@ -1,0 +1,47 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+.panel {
+	background-clip:	padding-box;
+	background-color:	#fcfcfc;
+	border:	1px solid rgba(24, 26, 27, .2);
+	box-shadow:	0 3px 5px rgba(24, 26, 27, .1),0 0 7px rgba(24, 26, 27, .1);
+	box-sizing:	content-box;
+	color:	#222426;
+	cursor:	default;
+	display:	flex;
+	flex-direction:	column;
+	font:	caption;
+	margin:	2em auto .5em;
+	padding:	0;
+	position:	relative;
+	-moz-user-select:	none;
+	overflow-x: hidden;
+}
+
+.panel.panel-section-list {
+	padding:	4px	0;
+}
+
+.panel-list-item[data-contextmenu] {
+	position:	relative;
+}
+
+.panel-list-item > menu[data-type="context"] {
+	display:	none;
+	position:	absolute;
+	margin:	0;
+	z-index:	200;
+	top:	23px;
+	left:	15px;
+	width:	calc(100% - 64px);
+	max-width:	calc(100% - 64px);
+}
+
+.panel-list-item:hover[data-contextmenu-visible="true"] > menu[data-type="context"] {
+	display:	block;
+	top:	22px;
+}

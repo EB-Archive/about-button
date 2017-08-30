@@ -108,6 +108,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	reload();
 });
 
+document.addEventListener("contextmenu", evt => {
+	evt.preventDefault();
+});
+
 /**
  * Checks if the suppplied page is shimmed.
  *
@@ -284,12 +288,13 @@ async function _reload() {
 				let img = generateImg(page.icon);
 				button.classList.add("panel-list-item");
 				if (disabled) {
+					button.dataset.disabled = true;
 					button.classList.add("disabled");
 				}
 				button.appendChild(img);
-				button.appendChild(document.createTextNode(url));
+				button.appendChild(createTextElement(url));
 				button.addEventListener("click", evt => {
-					if (!button.classList.contains("disabled")) {
+					if (evt.button === 0 && !button.dataset.disabled) {
 						if (!page.privileged) {
 							browser.tabs.create({url: url});
 						} else if (usePagesShim && url === "about:addons") {
@@ -324,46 +329,60 @@ async function _reload() {
 					let menuId = `${url}-menu`;
 					let menu = document.createElement("menu");
 					menu.setAttribute("id", menuId);
-					menu.setAttribute("type", "context");
+					menu.classList.add("panel", "panel-section", "panel-section-list");
+					menu.dataset.type = "context";
 					for (let query in page.query) {
 						if (menu.hasChildNodes()) {
-							menu.appendChild(document.createElement("hr"));
+							menu.appendChild(createSeparator());
 						}
 						/** @type AboutPageQuery[] */
 						let values = page.query[query];
 						/** @param {AboutPageQuery} value */
 						values.forEach(value => {
-							let menuitem = document.createElement("menuitem");
+							let menuitem = document.createElement("div");
 							let menuitemDescriptionKey = `page_${dataName}_${page.url}_${query}_${value.value}`;
 							let menuitemDescription = browser.i18n.getMessage(menuitemDescriptionKey);
 							let queryUrl = `${url}?${query}=${value.value}`;
-							if (menuitemDescription.length > 0 && menuitemDescription !== menuitemDescriptionKey) {
-								menuitem.setAttribute("label", menuitemDescription);
-							} else {
-								menuitem.setAttribute("label", queryUrl);
-							}
 							if (value.icon && value.icon.length > 0) {
-								menuitem.setAttribute("icon", `/icons/256/${value.icon}.png`)
+								menuitem.appendChild(generateImg(value.icon));
 							}
+							if (menuitemDescription.length > 0 && menuitemDescription !== menuitemDescriptionKey) {
+								menuitem.appendChild(createTextElement(menuitemDescription));
+							} else {
+								menuitem.appendChild(createTextElement(queryUrl));
+							}
+							menuitem.classList.add("panel-list-item");
 							if (disabled) {
-								menuitem.setAttribute("disabled", true);
+								menuitem.dataset.disabled = true;
+								menuitem.classList.add("disabled");
 							}
 							menuitem.addEventListener("click", evt => {
-								if (!page.privileged) {
-									browser.tabs.create({url: queryUrl});
-								} else if (usePagesShim && queryUrl === "about:addons") {
-									browser.runtime.openOptionsPage();
-								} else if (usePagesShim && page.shim) {
-									browser.tabs.create({url: (`${page.shim.includes(':') ? page.shim : defaultScheme + page.shim}?${query}=${value.value}`)});
-								} else {
-									browser.tabs.create({url: "/redirect/redirect.xhtml?dest=" + encodeURIComponent(queryUrl)});
+								evt.stopImmediatePropagation();
+								if (evt.button === 0 && !menuitem.dataset.disabled) {
+									if (!page.privileged) {
+										browser.tabs.create({url: queryUrl});
+									} else if (usePagesShim && queryUrl === "about:addons") {
+										browser.runtime.openOptionsPage();
+									} else if (usePagesShim && page.shim) {
+										browser.tabs.create({url: (`${page.shim.includes(':') ? page.shim : defaultScheme + page.shim}?${query}=${value.value}`)});
+									} else {
+										browser.tabs.create({url: "/redirect/redirect.xhtml?dest=" + encodeURIComponent(queryUrl)});
+									}
 								}
 							});
 							menu.appendChild(menuitem);
 						});
 					}
 					button.appendChild(menu);
-					button.setAttribute("contextmenu", menuId);
+					button.dataset.contextmenu = menuId;
+					button.addEventListener("contextmenu", evt => {
+						evt.preventDefault();
+						evt.stopImmediatePropagation();
+						button.dataset.contextmenuVisible = true;
+					});
+					button.addEventListener("mouseleave", evt => {
+						button.dataset.contextmenuVisible = false;
+					}, {passive: true});
 				}
 				if (page.alias.length > 0) {
 					let aliases = browser.i18n.getMessage("popup_tooltip_aliases");
@@ -402,6 +421,19 @@ async function _reload() {
 		status.appendChild(statusMessage);
 		statusContainer.classList.remove("hidden");
 	}
+}
+
+function createTextElement(text) {
+	let textElement = document.createElement("div");
+	textElement.classList.add("text");
+	textElement.textContent = text;
+	return textElement;
+}
+
+function createSeparator() {
+	let hr = document.createElement("div");
+	hr.classList.add("panel-section-separator");
+	return hr;
 }
 
 /**
