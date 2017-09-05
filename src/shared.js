@@ -17,6 +17,12 @@
 "use strict";
 /* global browser */
 
+/**
+ * Processes all i18n compatible tags on the page.
+ *
+ * @param {Object} subData The substitution data to use.
+ * @returns {undefined}
+ */
 async function processI18n(subData) {
 	function processSubstitution(translatable) {
 		let substitution = [];
@@ -27,7 +33,13 @@ async function processI18n(subData) {
 			substitution = substitution.map(sub => {
 				switch (sub) {
 					case "$protocol$":	return subData["protocol"] || "about:";
-					default:	return sub;
+					default: {
+						let subDataKey = /^\s*\$\s*(.+)\s*\$\s*$/.exec(sub);
+						if (subDataKey) {
+							return subData[subDataKey];
+						}
+						return sub;
+					}
 				}
 			});
 		}
