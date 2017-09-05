@@ -36,16 +36,30 @@ function parseQuery(query) {
 	return ret;
 }
 
-var error;
-let dest = decodeURIComponent(parseQuery(window.location.search).dest);
+let query = parseQuery(window.location.search);
+if ('dest' in query) {
+	let dest = decodeURIComponent(query.dest);
 
-if (dest) {
 	try {
 		window.location.href = dest;
 	} catch (e) {
-		error = e;
-		window.addEventListener("load", () => {
-			document.body.appendChild(document.createTextNode(error));
+		document.addEventListener("DOMContentLoaded", () => {
+			document.body.appendChild(document.createTextNode(e));
 		});
 	}
+} else {
+	document.addEventListener("DOMContentLoaded", () => {
+		function createTextElement(elementName, text = undefined) {
+			let element = document.createElement(elementName);
+			if (text !== undefined) {
+				element.appendChild(document.createTextNode(text));
+			}
+			return element;
+		}
+
+		document.body.appendChild(createTextElement("h1", "No redirect destination specified"));
+		document.body.appendChild(document.createTextNode("The redirect destination must be specified using the "));
+		document.body.appendChild(createTextElement("code", "dest"));
+		document.body.appendChild(document.createTextNode(" query."));
+	});
 }
