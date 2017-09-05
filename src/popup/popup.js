@@ -277,6 +277,13 @@ async function _reload() {
 			let content = document.createElement("section");
 			content.classList.add("panel-section", "panel-section-list");
 			category.content.forEach(page => {
+				// Ensure that this page is supported by this browser version
+				if ("strict_min_version" in page) {
+					if (browserInfo.version.localeCompare(page.strict_min_version, {numeric: true}) < 0) {
+						return;
+					}
+				}
+
 				let disabled = false;
 				let url = page.url.includes(':') ? page.url : defaultScheme + page.url;
 				if (page.privileged && !isShimmed(page, url, browserInfo)) {

@@ -42,6 +42,8 @@
 
 /** All the registered pages. @type Category[] */
 const ABOUT_PAGES	= [];
+const VERSION_REGEX	= /^\s*([\d.]+?)(?:\.0)*\s*$/;
+
 var defaultScheme	= null;
 var dataName	= null;
 
@@ -191,14 +193,14 @@ function registerPage(message, privileged) {
 		alias: []
 	};
 
-	if (message.alias) {
+	if ("alias" in message) {
 		let length = new Number(message.alias.length);
 		for (let i = 0; i < length; i++) {
 			data.alias[i] = new String(message.alias[i]);
 		}
 	}
 
-	if (message.query) {
+	if ("query" in message) {
 		data.query = {};
 		for (let query in message.query) {
 			let values = message.query[query];
@@ -214,10 +216,26 @@ function registerPage(message, privileged) {
 		}
 	}
 
+	if ("strict_min_version" in message) {
+		let minVer = String(message.strict_min_version);
+		let minVerData = VERSION_REGEX.exec(minVer);
+		if (minVerData) {
+			data.strict_min_version = minVerData[1];
+		}
+	}
+
+	if ("strict_max_version" in message) {
+		let maxVer	= String(message.strict_min_version);
+		let maxVerData	= VERSION_REGEX.exec(maxVer);
+		if (maxVerData) {
+			data.strict_min_version = maxVerData[1];
+		}
+	}
+
 	let path = removeProtocolFromURL(data.url);
 	let isNew = true;
 	if (privileged) {
-		if (message.description)
+		if ("description" in message)
 			data.description = new String(message.description);
 		for (let i = 0; i < aboutPages.length; i++) {
 			let d = aboutPages[i];
@@ -226,7 +244,7 @@ function registerPage(message, privileged) {
 			}
 		}
 		// Shims are only available to be created by a trusted source (i.e. this extension)
-		if (message.shim) {
+		if ("shim" in message) {
 			data.shim = new String(message.shim);
 		}
 	} else {

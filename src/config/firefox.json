@@ -12,8 +12,8 @@
 			{"url": "cache",	"icon": "drive",	"privileged": true,	"query":	{"storage": [{"value": "disk", "icon": "drive"}, {"value": "memory", "icon": "memory"}, {"value": "appcache", "icon": "application"}]}},
 			{"url": "checkerboard",	"icon": "chart-line",	"privileged": true},
 			{"url": "config",	"icon": "wrench",	"privileged": true},
-			{"url": "credits",	"icon": "vcard",	"privileged": true,	"shim": "https://www.mozilla.org/credits/"},
 			{"url": "crashes",	"icon": "error",	"privileged": true},
+			{"url": "credits",	"icon": "vcard",	"privileged": true,	"shim": "https://www.mozilla.org/credits/"},
 			{"url": "customizing",	"icon": "palette-edit",	"privileged": true},
 			{"url": "debugging",	"icon": "script-lightning",	"privileged": true},
 			{"url": "devtools-toolbox",	"icon": "wrench-orange",	"privileged": true},
@@ -39,6 +39,7 @@
 			{"url": "sync-log",	"icon": "page-refresh",	"privileged": true},
 			{"url": "sync-tabs",	"icon": "tabs-refresh",	"privileged": true},
 			{"url": "telemetry",	"icon": "chart-curve",	"privileged": true},
+			{"url": "url-classifier",	"icon": "link",	"privileged": true, "strict_min_version": "55.0"},
 			{"url": "webrtc",	"icon": "phone",	"privileged": true},
 			{"url": "welcomeback",	"icon": "emoticon-smile",	"privileged": true}
 		]
