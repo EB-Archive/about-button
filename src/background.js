@@ -271,57 +271,35 @@ function removeProtocolFromURL(url) {
 		return path ? path[1] : url;
 }
 
-browser.runtime.onMessage.addListener((message, sender, resolve) => {
+browser.runtime.onMessage.addListener(async (message, sender) => {
 	let messageType = String(message.method);
 	switch (messageType) {
 		case "registerPage": {
-			let result = registerPage(message.data, true);
-			if (typeof resolve === "function") {
-				resolve(result);	// Blame Mozilla's WebExtension Polyfill,
-				return;	// which implements this differently from Firefox.
-			} else { // You had one job, Mozilla. ONE JOB!
-				return result;	// Keep the Firefox and Polyfill implementation identical API-wise
-			}
+			return registerPage(message.data, true);
 		} case "getPages": {
-			return browser.storage.local.get({
+			let settings = await browser.storage.local.get({
 				showDisabledButtons: false
-			}).then(settings => {
-				return settings.showDisabledButtons;
-			}).catch(error => {
-				console.warn(error);
-				return false;
-			}).then(showDisabledButtons => {
-				return {
-					categories:	JSON.stringify(ABOUT_PAGES),
-					dataName:	dataName,
-					defaultScheme:	defaultScheme,
-					showDisabledButtons:	showDisabledButtons
-				};
 			});
+
+			return {
+				categories:	JSON.stringify(ABOUT_PAGES),
+				dataName:	dataName,
+				defaultScheme:	defaultScheme,
+				showDisabledButtons:	settings.showDisabledButtons
+			};
 		} case "getScheme": {
-			if (typeof resolve === "function") {
-				resolve(defaultScheme);	// Blame Mozilla's WebExtension Polyfill,
-				return;	// which implements this differently from Firefox.
-			} else { // You had one job, Mozilla. ONE JOB!
-				return defaultScheme;	// Keep the Firefox and Polyfill implementation identical API-wise
-			}
+			return defaultScheme;
 		} default: {}
 	}
 });
 
 // browser.runtime.onMessageExternal is only supported from FF 54.0+
-if (browser.runtime.onMessageExternal) {
-	browser.runtime.onMessageExternal.addListener((message, sender, resolve) => {
+if ("onMessageExternal" in browser.runtime) {
+	browser.runtime.onMessageExternal.addListener(async (message, sender) => {
 		let messageType = String(message.method);
 		switch (messageType) {
 			case "registerPage": {
-				let result = registerPage(message.data, false);
-				if (typeof resolve === "function") {
-					resolve(result);	// Blame Mozilla's WebExtension Polyfill,
-					return;	// which implements this differently from Firefox.
-				} else { // You had one job, Mozilla. ONE JOB!
-					return result;	// Keep the Firefox and Polyfill implementation identical API-wise
-				}
+				return registerPage(message.data, false);
 			} default: {
 				throw "Invalid message method: " + messageType;
 			}
