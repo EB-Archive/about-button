@@ -174,7 +174,7 @@ function noKnownPages(defaultScheme, showDisabledButtons) {
 	return panel;
 }
 
-var reloadCounter = 0;
+let reloadCounter = 0;
 
 /**
  * (Re-)load the current popup.
