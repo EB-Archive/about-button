@@ -279,7 +279,16 @@ async function _reload() {
 			category.content.forEach(page => {
 				// Ensure that this page is supported by this browser version
 				if ("strict_min_version" in page) {
-					if (browserInfo.version.localeCompare(page.strict_min_version, {numeric: true}) < 0) {
+					if (browserInfo.version.localeCompare(page.strict_min_version, [], {numeric: true, caseFirst: "upper"}) < 0) {
+						return;
+					}
+				}
+				if ("strict_max_version" in page) {
+					let strictMaxVersion = page.strict_max_version;
+					if (!/[a-zA-Z]/.test(strictMaxVersion)) {
+						strictMaxVersion += "\u{10FFFF}";
+					}
+					if (browserInfo.version.localeCompare(strictMaxVersion, [], {numeric: true, caseFirst: "upper"}) > 0) {
 						return;
 					}
 				}

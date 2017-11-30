@@ -225,10 +225,10 @@ function registerPage(message, privileged) {
 	}
 
 	if ("strict_max_version" in message) {
-		let maxVer	= String(message.strict_min_version);
+		let maxVer	= String(message.strict_max_version);
 		let maxVerData	= VERSION_REGEX.exec(maxVer);
 		if (maxVerData) {
-			data.strict_min_version = maxVerData[1];
+			data.strict_max_version = maxVerData[1];
 		}
 	}
 
