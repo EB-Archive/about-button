@@ -3,7 +3,7 @@
 		"category": "general",
 		"priority": 1000,
 		"content": [
-			{"url": "",	"icon": "firefox",	"privileged": true},
+			{"url": "",	"icon": "firefox",	"privileged": true, "strict_max_version": "58.0"},
 			{"url": "about",	"icon": "cog",	"privileged": true},
 			{"url": "accounts",	"icon": "user",	"privileged": true, "strict_max_version": "57.0"},
 			{"url": "addons",	"icon": "plugin",	"privileged": true},
@@ -19,7 +19,7 @@
 			{"url": "devtools",	"icon": "wrench-orange",	"privileged": true, "strict_min_version": "58.0"},
 			{"url": "devtools-toolbox",	"icon": "wrench-orange",	"privileged": true, "strict_max_version": "57.0"},
 			{"url": "downloads",	"icon": "drive-down",	"privileged": true},
-			{"url": "healthreport",	"icon": "heart",	"privileged": true},
+			{"url": "healthreport",	"icon": "heart",	"privileged": true, "strict_max_version": "58.0"},
 			{"url": "home",	"icon": "house",	"privileged": false},
 			{"url": "license",	"icon": "report",	"privileged": false},
 			{"url": "logo",	"icon": "picture-empty",	"privileged": false},
