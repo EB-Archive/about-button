@@ -15,32 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 "use strict";
-/* global browser */
+/* global browser, Promise */
 
 /**
- * @typedef {Object} Category
- * @property {String} category The category ID
- * @property {AboutPage[]} content All the about: pages
+ * @typedef	{Object}	Category
+ * @property	{String}	category	The category ID
+ * @property	{AboutPage[]}	content	All the about: pages
  */
 /**
- * @typedef {Object} AboutPage
- * @property {String} url The page URL
- * @property {?String} icon The page icon
- * @property {Boolean} privileged If the page is privileged
- * @property {?String} description The description
- * @property {?String[]} alias All the URL aliases of this page
+ * @typedef	{Object}	AboutPage
+ * @property	{String}	url	The page URL
+ * @property	{?String}	icon	The page icon
+ * @property	{Boolean}	privileged	If the page is privileged
+ * @property	{?String}	description	The description
+ * @property	{?String[]}	alias	All the URL aliases of this page
+ * @property	{?AboutPageQuery[][]}	query	All the about: page queries
+ * @property	{?String}	strict_min_version	The minimum version of the browser that supports this version
+ * @property	{?String}	strict_max_version	The maximum version of the browser that supports this version
  */
 /**
- * @typedef {Object} AboutPageQuery
- * @property {String} value The value of the query
- * @property {?String} icon The query icon
+ * @typedef	{Object}	AboutPageQuery
+ * @property	{String}	value	The value of the query
+ * @property	{?String}	icon	The query icon
  */
 /**
- * @typedef {Object} BrowserInfo
- * @property {String} name
- * @property {String} vendor
- * @property {String} version
- * @property {String} buildID
+ * @typedef	{Object}	BrowserInfo
+ * @property	{String}	name
+ * @property	{String}	vendor
+ * @property	{String}	version
+ * @property	{String}	buildID
  */
 
 /**
@@ -209,28 +212,26 @@ async function _reload() {
 	statusContainer.classList.add("hidden");
 
 	try {
-		/** @type Category[] */
-		let categories;
-		/** @type String */
-		let dataName;
-		/** @type String */
-		let defaultScheme;
-		/** @type Boolean */
-		let showDisabledButtons;
-		/** @type BrowserInfo */
-		let browserInfo;
-
-		let getPagesPromise = (browser.runtime.sendMessage({ method: "getPages" }).then(response => {
-			categories	= JSON.parse(response.categories);
-			dataName	= response.dataName;
-			defaultScheme	= response.defaultScheme;
-			showDisabledButtons	= response.showDisabledButtons || false;
-		}));
-
-		if (browser.runtime.getBrowserInfo) {
-			browserInfo = await browser.runtime.getBrowserInfo();
-		} else {
-			browserInfo = {
+		const [
+			{
+				/** @type Category[] */
+				categories,
+				/** @type String */
+				dataName,
+				/** @type String */
+				defaultScheme,
+				/** @type Boolean */
+				showDisabledButtons
+			},
+			/** @type BrowserInfo */
+			browserInfo
+		] = await Promise.all([
+			browser.runtime.sendMessage({ method: "getPages" }).then(response => {
+				response.categories	= JSON.parse(response.categories);
+				response.showDisabledButtons	= response.showDisabledButtons || false;
+				return response;
+			}),
+			("getBrowserInfo" in browser.runtime ? browser.runtime.getBrowserInfo() : Promise.resolve({
 				// Assume running under Google Chrome for now, because the minimum
 				// supported Firefox version supports `browser.runtime.getBrowserInfo()`
 				// and we currently only have code for Mozilla Firefox and Google Chrome.
@@ -239,10 +240,8 @@ async function _reload() {
 				vendor: "Google",
 				version: "Unknown",
 				buildID: "Unknown"
-			};
-		}
-
-		await getPagesPromise;
+			}))
+		]);
 
 		if (!showDisabledButtons) {
 			let statusMessage = document.createElement("div");
@@ -252,35 +251,38 @@ async function _reload() {
 		}
 
 		main.textContent = "";
-		categories.forEach(category => {
-			let header = document.createElement("div");
+		for (/** @type Category */ const category of categories) {
+			/** @type HTMLDivElement */
+			const header = document.createElement("div");
 			header.classList.add("panel-section", "panel-section-header");
-			let headerText = document.createElement("div");
+			/** @type HTMLDivElement */
+			const headerText = document.createElement("div");
 			headerText.classList.add("text-section-header");
 			let categoryName = browser.i18n.getMessage(`category_${category.category}`);
 
 			if (categoryName.length === 0) {
 				// The category hasn't been translated, so let’s use the ID
 				// TODO: Handle `camelCase` words
-				categoryName += category.category.split(/[\s_-]/).forEach(word => {
+				for (/** @type String */ let word of category.category.split(/[\s_-]/)) {
 					word = word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
 					if (categoryName.length > 0)
 						categoryName += ` ${word}`;
 					else
 						categoryName = word;
-				})
+				}
 			}
 
 			headerText.appendChild(document.createTextNode(categoryName));
 			header.appendChild(headerText);
 
-			let content = document.createElement("section");
+			/** @type HTMLSectionElement */
+			const content = document.createElement("section");
 			content.classList.add("panel-section", "panel-section-list");
-			category.content.forEach(page => {
+			for (/** @type AboutPage */ const page of category.content) {
 				// Ensure that this page is supported by this browser version
 				if ("strict_min_version" in page) {
 					if (browserInfo.version.localeCompare(page.strict_min_version, [], {numeric: true, caseFirst: "upper"}) < 0) {
-						return;
+						continue;
 					}
 				}
 				if ("strict_max_version" in page) {
@@ -289,7 +291,7 @@ async function _reload() {
 						strictMaxVersion += "\u{10FFFF}";
 					}
 					if (browserInfo.version.localeCompare(strictMaxVersion, [], {numeric: true, caseFirst: "upper"}) > 0) {
-						return;
+						continue;
 					}
 				}
 
@@ -298,11 +300,12 @@ async function _reload() {
 				if (page.privileged && !isShimmed(page, url, browserInfo)) {
 					disabled = true;
 					if (!showDisabledButtons)
-						return;
+						continue;
 				}
 
-				let button = document.createElement("div");
-				let img = generateImg(page.icon);
+				/** @type HTMLDivElement */
+				const button = document.createElement("div");
+				const img = generateImg(page.icon);
 				button.classList.add("panel-list-item");
 				if (disabled) {
 					button.dataset.disabled = true;
@@ -325,8 +328,8 @@ async function _reload() {
 				});
 				/** @type String */
 				let title	= "";
-				let descriptionKey	= `page_${dataName}_${page.url}`;
-				let description	= browser.i18n.getMessage(descriptionKey);
+				const descriptionKey	= `page_${dataName}_${page.url}`;
+				const description	= browser.i18n.getMessage(descriptionKey);
 				if (description.length > 0 && description !== descriptionKey) {
 					if (title.length > 0) {
 						title += `\n${description}`;
@@ -334,7 +337,7 @@ async function _reload() {
 						title = description;
 					}
 				}
-				if (page.query) {
+				if ("query" in page) {
 					{
 						let hasQuery = browser.i18n.getMessage("popup_tooltip_hasQuery");
 						if (title.length > 0) {
@@ -343,19 +346,18 @@ async function _reload() {
 							title = hasQuery;
 						}
 					}
-					let menuId = `${url}-menu`;
-					let menu = document.createElement("menu");
+					const menuId = `${url}-menu`;
+					const menu = document.createElement("menu");
 					menu.setAttribute("id", menuId);
 					menu.classList.add("panel", "panel-section", "panel-section-list");
 					menu.dataset.type = "context";
-					for (let query in page.query) {
+					for (const query in page.query) {
 						if (menu.hasChildNodes()) {
 							menu.appendChild(createSeparator());
 						}
 						/** @type AboutPageQuery[] */
-						let values = page.query[query];
-						/** @param {AboutPageQuery} value */
-						values.forEach(value => {
+						const values = page.query[query];
+						for (/** @type AboutPageQuery */ const value of values) {
 							let menuitem = document.createElement("div");
 							let menuitemDescriptionKey = `page_${dataName}_${page.url}_${query}_${value.value}`;
 							let menuitemDescription = browser.i18n.getMessage(menuitemDescriptionKey);
@@ -388,7 +390,7 @@ async function _reload() {
 								}
 							});
 							menu.appendChild(menuitem);
-						});
+						}
 					}
 					button.appendChild(menu);
 					button.dataset.contextmenu = menuId;
@@ -416,16 +418,15 @@ async function _reload() {
 					button.setAttribute("title", title);
 				}
 				content.appendChild(button);
-			});
+			}
 			if (content.hasChildNodes()) {
 				main.appendChild(header);
 				main.appendChild(content);
 			}
-		});
+		}
 		if (!main.hasChildNodes()) {
 			let pages = 0;
 			categories.forEach(category => (pages += category.content.length || 0));
-			console.log(pages);
 			main.appendChild(noKnownPages(defaultScheme, !(!showDisabledButtons && pages > 0)));
 			statusSeparator.classList.add("hidden");
 		} else {
@@ -456,9 +457,8 @@ function createSeparator() {
 /**
  * Generate the {@link HTMLImgElement &lt;img&gt;} tag for the specified image.
  *
- * @param {String} image The image file name
- *
- * @return {HTMLImgElement} The image tag
+ * @param	{String}	image	The image file name
+ * @return	{HTMLImgElement}	The image tag
  */
 function generateImg(image) {
 	let img = document.createElement("img");
