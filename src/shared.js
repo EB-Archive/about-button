@@ -23,7 +23,7 @@
  * @param {Object} subData The substitution data to use.
  * @returns {undefined}
  */
-async function processI18n(subData) {
+const processI18n = async (subData) => {
 	function processSubstitution(translatable) {
 		let substitution = [];
 		if (translatable.dataset.i18nSubstitution) {
@@ -66,7 +66,7 @@ async function processI18n(subData) {
 			translatable.setAttribute("title", text);
 		}
 	});
-}
+};
 
 /**
  * Inserts the i18n string to the node.
@@ -75,7 +75,7 @@ async function processI18n(subData) {
  * @param {Element} node The Node to put stuff in
  * @returns {undefined}
  */
-async function insertI18n(i18n, node) {
+const insertI18n = async (i18n, node) => {
 	node.textContent = "";
 	i18n.split(/\r\n|\n|\r/).forEach(text => {
 		if (node.hasChildNodes()) {

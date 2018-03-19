@@ -15,65 +15,122 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 "use strict";
-/* global browser */
-
-/** @type HTMLInputElement */
-let element_showDisabledButtons;
-
-/**
- * Applies internationalization to the current page.
- *
- * @return {undefined}
- */
-async function i18nInit() {
-	let protocol = await browser.runtime.sendMessage({ method: "getScheme" });
-
-	processI18n({
-		protocol: protocol
-	});
-}
-
-function reload() {
-	browser.storage.local.get({
-		showDisabledButtons: false
-	}).then((settings) => {
-		element_showDisabledButtons.checked = settings.showDisabledButtons;
-	}).catch((error) => {
-		element_showDisabledButtons.checked = false;
-	});
-}
-
-function saveOptions() {
-	browser.storage.local.set({
-		showDisabledButtons: element_showDisabledButtons.checked
-	}).catch(error => {
-		console.error("Could not save options");
-		console.error(error);
-	});
-}
+/* global browser, Promise */
 
 document.addEventListener("DOMContentLoaded", () => {
-	element_showDisabledButtons = document.getElementById("showDisabledButtons");
-	for(let inputElement of document.getElementsByTagName("input")) {
-		let save = inputElement.hasAttribute("data-save") ? Boolean(inputElement.getAttribute("data-save")) : true;
-		if (!save) continue;
-		inputElement.addEventListener("input", () => {saveOptions();});
-	}
-	for(let inputElement of document.getElementsByTagName("button")) {
-		let save = inputElement.hasAttribute("data-save") ? Boolean(inputElement.getAttribute("data-save")) : true;
-		if (!save) continue;
-		inputElement.addEventListener("click", () => {saveOptions();});
-	}
-	browser.storage.onChanged.addListener((changes, areaName) => {
-		switch (areaName) {
-			case "local": {
-				if (changes.showDisabledButtons !== undefined) {
-					reload();
+	return Promise.all([
+		i18nInit(),
+		loadOptions()
+	]);
+});
+
+const loadOptions = async () => {
+	const flattenedData = {};
+	((data, key = null) => {
+		for (const k in data) {
+			const flattenedKey = (key === null ? k : `${key}.${k}`);
+			const value = data[k];
+			if (typeof value === "object") {
+				flattenData(value, flattenedKey);
+			} else {
+				flattenedData[flattenedKey] = value;
+			}
+		}
+	})(await browser.storage.local.get());
+
+	const elements = document.querySelectorAll("select[data-save], input[data-save]");
+
+	for (const e of elements) {
+		const value = (e.dataset.save in flattenedData ? flattenedData[e.dataset.save] : e.dataset.saveDefault || undefined);
+		switch (e.tagName.toUpperCase()) {
+			case "INPUT": {
+				e.addEventListener("input", saveOptions);
+				switch (e.type.toLowerCase()) {
+					case "checkbox": {
+						if (value !== undefined) e.checked = value;
+						break;
+					} default: {
+						console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e);
+						break;
+					}
 				}
+				break;
+			} case "SELECT": {
+				e.addEventListener("change", saveOptions);
+				if (value !== undefined) {
+					const option = e.querySelector(`[value="${value}"]`);
+					for (let i = 0; i < e.options.length; i++) {
+						if (e.options[e.options[i] === option]) {
+							e.selectedIndex = i;
+							break;
+						}
+					}
+				}
+				return;
+			} case "BUTTON": {
+				e.addEventListener("click", saveOptions);
+			} default: {
+				console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e);
 				break;
 			}
 		}
-	});
-	i18nInit();
-	reload();
-});
+	}
+};
+
+const saveOptions = async () => {
+	const elements = document.querySelectorAll("select[data-save], input[data-save]");
+	let saveData = {};
+
+	for (const e of elements) {
+		const tree = e.dataset.save.split(".");
+		let stackPos = saveData;
+		for (var i = 0; i < tree.length; i++) {
+			let key = tree[i];
+			if (i === tree.length - 1) {
+				switch (e.tagName.toUpperCase()) {
+					case "INPUT": {
+						switch (e.type.toLowerCase()) {
+							case "checkbox": {
+								saveData[key] = e.checked;
+								break;
+							} default: {
+								console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e);
+								break;
+							}
+						}
+						break;
+					} case "SELECT": {
+						let selectedOption = e.item(e.selectedIndex);
+						let value = selectedOption.value;
+						saveData[key] = value;
+						break;
+					} default: {
+						console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e);
+						break;
+					}
+				}
+			} else {
+				if (key in stackPos) {
+					stackPos = stackPos[key];
+				} else {
+					stackPos = (stackPos[key] = {});
+				}
+			}
+		}
+	}
+
+	return browser.storage.local.set(saveData);
+};
+
+/**
+ * Applies internationalization to the current page.
+ */
+const i18nInit = async () => {
+	const [
+		protocol
+	] = await Promise.all([
+		browser.runtime.sendMessage({ method: "getScheme" })
+	]);
+
+	return processI18n({ protocol });
+};
