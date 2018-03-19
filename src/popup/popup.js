@@ -25,18 +25,18 @@
 /**
  * @typedef	{Object}	AboutPage
  * @property	{String}	url	The page URL
- * @property	{?String}	icon	The page icon
+ * @property	{String}	[icon]	The page icon
  * @property	{Boolean}	privileged	If the page is privileged
- * @property	{?String}	description	The description
- * @property	{?String[]}	alias	All the URL aliases of this page
- * @property	{?AboutPageQuery[][]}	query	All the about: page queries
- * @property	{?String}	strict_min_version	The minimum version of the browser that supports this version
- * @property	{?String}	strict_max_version	The maximum version of the browser that supports this version
+ * @property	{String}	[description]	The description
+ * @property	{String[]}	[alias]	All the URL aliases of this page
+ * @property	{AboutPageQuery[][]}	[query]	All the about: page queries
+ * @property	{String}	[strict_min_version]	The minimum version of the browser that supports this version
+ * @property	{String}	[strict_max_version]	The maximum version of the browser that supports this version
  */
 /**
  * @typedef	{Object}	AboutPageQuery
  * @property	{String}	value	The value of the query
- * @property	{?String}	icon	The query icon
+ * @property	{String}	[icon]	The query icon
  */
 /**
  * @typedef	{Object}	BrowserInfo
@@ -169,7 +169,7 @@ function noKnownPages(defaultScheme, showDisabledButtons) {
 
 	let protocol = document.createElement("div");
 	protocol.classList.add("text-section-header");
-	protocol.appendChild(document.createTextNode(browser.i18n.getMessage(`popup_unsupported_${showDisabledButtons ? "unknown" : "privilegedOnly"}`, defaultScheme)));
+	protocol.appendChild(document.createTextNode(getMessage(`popup_unsupported_${showDisabledButtons ? "unknown" : "privilegedOnly"}`, defaultScheme)));
 
 	panel.appendChild(protocol);
 	return panel;
@@ -243,7 +243,7 @@ async function _reload() {
 
 		if (!showDisabledButtons) {
 			let statusMessage = document.createElement("div");
-			statusMessage.appendChild(document.createTextNode(browser.i18n.getMessage("popup_privilegedHidden")));
+			statusMessage.appendChild(document.createTextNode(getMessage("popup_privilegedHidden")));
 			status.appendChild(statusMessage);
 			statusContainer.classList.remove("hidden");
 		}
@@ -256,7 +256,7 @@ async function _reload() {
 			/** @type HTMLDivElement */
 			const headerText = document.createElement("div");
 			headerText.classList.add("text-section-header");
-			let categoryName = browser.i18n.getMessage(`category_${category.category}`);
+			let categoryName = getMessage(`category_${category.category}`);
 
 			if (categoryName.length === 0) {
 				// The category hasn't been translated, so let’s use the ID
@@ -327,7 +327,7 @@ async function _reload() {
 				/** @type String */
 				let title	= "";
 				const descriptionKey	= `page_${dataName}_${page.url}`;
-				const description	= browser.i18n.getMessage(descriptionKey);
+				const description	= getMessage(descriptionKey);
 				if (description.length > 0 && description !== descriptionKey) {
 					if (title.length > 0) {
 						title += `\n${description}`;
@@ -337,7 +337,7 @@ async function _reload() {
 				}
 				if ("query" in page) {
 					{
-						let hasQuery = browser.i18n.getMessage("popup_tooltip_hasQuery");
+						let hasQuery = getMessage("popup_tooltip_hasQuery");
 						if (title.length > 0) {
 							title += `\n${hasQuery}`;
 						} else {
@@ -358,7 +358,7 @@ async function _reload() {
 						for (/** @type AboutPageQuery */ const value of values) {
 							let menuitem = document.createElement("div");
 							let menuitemDescriptionKey = `page_${dataName}_${page.url}_${query}_${value.value}`;
-							let menuitemDescription = browser.i18n.getMessage(menuitemDescriptionKey);
+							let menuitemDescription = getMessage(menuitemDescriptionKey);
 							let queryUrl = `${url}?${query}=${value.value}`;
 							if (value.icon && value.icon.length > 0) {
 								menuitem.appendChild(generateImg(value.icon));
@@ -402,7 +402,7 @@ async function _reload() {
 					}, {passive: true});
 				}
 				if (page.alias.length > 0) {
-					let aliases = browser.i18n.getMessage("popup_tooltip_aliases");
+					let aliases = getMessage("popup_tooltip_aliases");
 					page.alias.forEach(alias => {
 						aliases += `\n${alias.includes(':') ? alias : defaultScheme + alias}`;
 					});

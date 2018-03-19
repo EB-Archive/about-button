@@ -47,21 +47,21 @@ const processI18n = async (subData) => {
 	}
 
 	document.querySelectorAll("[data-i18n]").forEach(translatable => {
-		let text = browser.i18n.getMessage(translatable.dataset.i18n, processSubstitution(translatable));
+		let text = getMessage(translatable.dataset.i18n, processSubstitution(translatable));
 		if (text.length > 0) {
 			insertI18n(text, translatable);
 		}
 	});
 
 	document.querySelectorAll("[data-i18n-label]").forEach(translatable => {
-		let text = browser.i18n.getMessage(translatable.dataset.i18nLabel, processSubstitution(translatable));
+		let text = getMessage(translatable.dataset.i18nLabel, processSubstitution(translatable));
 		if (text.length > 0) {
 			translatable.setAttribute("label", text);
 		}
 	});
 
 	document.querySelectorAll("[data-i18n-title]").forEach(translatable => {
-		let text = browser.i18n.getMessage(translatable.dataset.i18nTitle, processSubstitution(translatable));
+		let text = getMessage(translatable.dataset.i18nTitle, processSubstitution(translatable));
 		if (text.length > 0) {
 			translatable.setAttribute("title", text);
 		}
@@ -71,9 +71,8 @@ const processI18n = async (subData) => {
 /**
  * Inserts the i18n string to the node.
  *
- * @param {String} i18n The content of messages.json
- * @param {Element} node The Node to put stuff in
- * @returns {undefined}
+ * @param	{String}	i18n The content of messages.json
+ * @param	{Element}	node The Node to put stuff in
  */
 const insertI18n = async (i18n, node) => {
 	node.textContent = "";
@@ -83,4 +82,50 @@ const insertI18n = async (i18n, node) => {
 		}
 		node.appendChild(document.createTextNode(text));
 	});
+};
+
+/**
+ * Translates a message.
+ *
+ * @param	{String}	messageName	The name of the message, as specified in the messages.json file.
+ * @param	{String|String[]}	[substitutions]	A single substitution string, or an array of substitution strings.
+ * @return	{String}	Message localized for the current locale.
+ */
+const getMessage = (messageName, substitutions) => {
+	if (!/^[a-zA-Z0-9_@]+$/.test(messageName)) {
+		// The message needs encoding
+		const regexp = /^[a-zA-Z0-9_@]$/;
+		let newMessage = "";
+		for (let i = 0; i < messageName.length; i++) {
+			const char = messageName.charAt(i);
+			if (regexp.test(char)) {
+				newMessage += char;
+			} else {
+				const code = messageName.charCodeAt(i);
+				if (code >= 0 && code < 256) {
+					newMessage += `@x${leftPad(code.toString(16).toUpperCase(), 2, 0)}`;
+				} else if (code < 65536) {
+					newMessage += `@u${leftPad(code.toString(16).toUpperCase(), 4, 0)}`;
+				}
+			}
+		}
+		messageName = newMessage;
+	}
+	return browser.i18n.getMessage(messageName, substitutions);
+};
+
+/**
+ * Left pads a String.
+ *
+ * @param	{String}	string	The string to left pad.
+ * @param	{Number}	[size=0]	The size to expand the string to.
+ * @param	{String}	[c=" "]	The character to use to pad the string.
+ *
+ * @return	{String}	The left padded string.
+ */
+const leftPad = (string, size = 0, c = " ") => {
+	c	= String(c);
+	string	= String(string);
+	size	-= string.length;
+	return	(size > 0 ? c[0].repeat(size) : "") + string;
 };

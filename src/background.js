@@ -18,26 +18,32 @@
 /* global browser */
 
 /**
- * @typedef {Object} Category
- * @property {String} category The category ID
- * @property {Number} priority The category priority
- * @property {AboutPage[]} content All the about: pages
+ * @typedef	{Object}	Category
+ * @property	{String}	category	The category ID
+ * @property	{AboutPage[]}	content	All the about: pages
  */
 /**
- * @typedef {Object} AboutPage
- * @property {String} url The page URL
- * @property {?String} icon The page icon
- * @property {Boolean} privileged If the page is privileged
- * @property {?String} description The description
- * @property {?String[]} alias All the URL aliases of this page
- * @property {?Object} query The optional query string parameters
+ * @typedef	{Object}	AboutPage
+ * @property	{String}	url	The page URL
+ * @property	{String}	[icon]	The page icon
+ * @property	{Boolean}	privileged	If the page is privileged
+ * @property	{String}	[description]	The description
+ * @property	{String[]}	[alias]	All the URL aliases of this page
+ * @property	{AboutPageQuery[][]}	[query]	All the about: page queries
+ * @property	{String}	[strict_min_version]	The minimum version of the browser that supports this version
+ * @property	{String}	[strict_max_version]	The maximum version of the browser that supports this version
  */
 /**
- * @typedef {Object} BrowserInfo
- * @property {String} name
- * @property {String} vendor
- * @property {String} version
- * @property {String} buildID
+ * @typedef	{Object}	AboutPageQuery
+ * @property	{String}	value	The value of the query
+ * @property	{String}	[icon]	The query icon
+ */
+/**
+ * @typedef	{Object}	BrowserInfo
+ * @property	{String}	name
+ * @property	{String}	vendor
+ * @property	{String}	version
+ * @property	{String}	buildID
  */
 
 /** All the registered pages. @type Category[] */
