@@ -94,6 +94,10 @@ button, #main .panel-list-item, #open-options {
 	width: calc(100% + 16px) !important;
 }
 
+#footer {
+	overflow: visible;
+}
+
 #open-options {
 	text-align:	center;
 	line-height:	16px;
