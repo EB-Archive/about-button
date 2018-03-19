@@ -88,7 +88,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 	if (isDebug) {
-		document.getElementById("showDisabledButtons").addEventListener("click", () => {
+		let button = document.getElementById("showDisabledButtons");
+		button.style.display = "inline-block";
+		button.addEventListener("click", () => {
 			browser.storage.local.get({
 				showDisabledButtons: false
 			}).then(settings => {
@@ -99,8 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				console.error(error);
 			});
 		});
-	} else {
-		document.getElementById("header").setAttribute("style", "display: none !important;");
 	}
 	document.getElementById("open-options").addEventListener("click", () => {
 		browser.runtime.openOptionsPage();

@@ -20,21 +20,21 @@
 /* +----------+ */
 
 html, body {
-	overflow-x: hidden;
-	margin: 0px;
+	overflow-x:	hidden;
+	margin:	0px;
 }
 
 img {
-	pointer-events: none;
+	pointer-events:	none;
 }
 
 body {
-	max-height: 600px;
+	max-height:	600px;
 }
 
 button, #main .panel-list-item, #open-options {
-	text-align: left;
-	white-space: nowrap;
+	text-align:	left;
+	white-space:	nowrap;
 }
 
 /* +---------+ */
@@ -43,11 +43,11 @@ button, #main .panel-list-item, #open-options {
 
 .icon {
 	vertical-align: middle;
-	margin-right: 8px;
+	margin-right:	8px;
 }
 
 .icon.missing {
-	margin-right: 24px;
+	margin-right:	24px;
 }
 
 /* +-----+ */
@@ -55,10 +55,11 @@ button, #main .panel-list-item, #open-options {
 /* +-----+ */
 
 #showDisabledButtons {
-	text-align: center;
-	height: calc(100% + 8px);
-	overflow-x: visible;
-	white-space: pre-line;
+	display:	none;
+	text-align:	center;
+	height:	calc(100% + 8px);
+	overflow-x:	visible;
+	white-space:	pre-line;
 }
 
 #main {
@@ -67,10 +68,10 @@ button, #main .panel-list-item, #open-options {
 }
 
 #main > div {
-	display: flex;
-	flex-direction: column;
-	width: 100%;
-	border-spacing: 8px;
+	display:	flex;
+	flex-direction:	column;
+	width:	100%;
+	border-spacing:	8px;
 }
 
 #main > .panel-section-list {
@@ -82,7 +83,7 @@ button, #main .panel-list-item, #open-options {
 }
 
 #main > div > button {
-	margin: 4px;
+	margin:	4px;
 }
 
 #main > div > button,
@@ -91,11 +92,11 @@ button, #main .panel-list-item, #open-options {
 }
 
 #main .panel-list-item, #main .panel-section, #open-options {
-	width: calc(100% + 16px) !important;
+	width:	calc(100% + 16px) !important;
 }
 
 #footer {
-	overflow: visible;
+	overflow:	visible;
 }
 
 #open-options {
