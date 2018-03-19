@@ -93,23 +93,18 @@ document.addEventListener("DOMContentLoaded", () => {
 	if (isDebug) {
 		let button = document.getElementById("showDisabledButtons");
 		button.style.display = "inline-block";
-		button.addEventListener("click", () => {
-			browser.storage.local.get({
-				showDisabledButtons: false
-			}).then(settings => {
-				browser.storage.local.set({
-					showDisabledButtons: !settings.showDisabledButtons
-				});
-			}).catch(error => {
-				console.error(error);
-			});
+		button.addEventListener("click", async () => {
+			const showDisabledButtons = await browser.storage.local.get({ showDisabledButtons: false });
+			return browser.storage.local.set({ showDisabledButtons: !showDisabledButtons });
 		});
 	}
 	document.getElementById("open-options").addEventListener("click", () => {
 		browser.runtime.openOptionsPage();
 	});
-	i18nInit();
-	reload();
+	return Promise.all([
+		i18nInit(),
+		reload()
+	]);
 });
 
 document.addEventListener("contextmenu", evt => {
@@ -145,14 +140,17 @@ function isShimmed(page, url, browserInfo) {
  * @return {undefined}
  */
 async function i18nInit() {
-	let protocol = await browser.runtime.sendMessage({ method: "getScheme" });
-	let main = document.getElementById("main");
+	const [
+		protocol
+	] = await Promise.all([
+		browser.runtime.sendMessage({ method: "getScheme" })
+	]);
 
 	document.getElementById("main").appendChild(noKnownPages(protocol, true));
 	document.getElementById("status-separator").classList.add("hidden");
 
-	processI18n({
-		protocol: protocol
+	return processI18n({
+		protocol
 	});
 }
 
@@ -441,27 +439,38 @@ async function _reload() {
 	}
 }
 
+/**
+ * Creates a <code>&lt;div class="text"&gt;</code> element containing the supplied text.
+ *
+ * @param	{String}	text	The text to use.
+ * @returns	{HTMLDivElement}	The element containing the text node.
+ */
 function createTextElement(text) {
-	let textElement = document.createElement("div");
+	const textElement = document.createElement("div");
 	textElement.classList.add("text");
-	textElement.textContent = text;
+	textElement.appendChild(document.createTextNode(text));
 	return textElement;
 }
 
+/**
+ * Creates a <code>&lt;div class="panel-section-separator"&gt;</code> element.
+ *
+ * @returns	{HTMLDivElement}	The element.
+ */
 function createSeparator() {
-	let hr = document.createElement("div");
+	const hr = document.createElement("div");
 	hr.classList.add("panel-section-separator");
 	return hr;
 }
 
 /**
- * Generate the {@link HTMLImgElement &lt;img&gt;} tag for the specified image.
+ * Creates an <code>&lt;img&gt;</code> element for the specified image.
  *
  * @param	{String}	image	The image file name
  * @return	{HTMLImgElement}	The image tag
  */
 function generateImg(image) {
-	let img = document.createElement("img");
+	const img = document.createElement("img");
 	img.setAttribute("class",	"icon");
 	img.setAttribute("width",	"16px");
 	if (image && image.length !== 0) {
