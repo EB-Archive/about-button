@@ -15,30 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 "use strict";
-/* global browser */
 
-/**
- * @param {String} query
- * @returns {Object}
+// eslint-disable-next-line valid-jsdoc
+/** @return	{Object<string,string>}
+ * @param	{string}	query
  */
 function parseQuery(query) {
 	if (!query)
 		query = "";
 
-	if (query[0] === '?')
+	if (query[0] === "?")
 		query = query.slice(1);
 
-	let ret = {};
-	query.split('&').forEach((path) => {
-		let p = path.split('=');
+	const ret = {};
+	query.split("&").forEach((path) => {
+		const p = path.split("=");
 		ret[p[0]] = (p.length > 0 ? p[1] : true);
 	});
 	return ret;
 }
 
-let query = parseQuery(window.location.search);
-if ('dest' in query) {
-	let dest = decodeURIComponent(query.dest);
+const query = parseQuery(window.location.search);
+if ("dest" in query) {
+	const dest = decodeURIComponent(query.dest);
 
 	try {
 		window.location.href = dest;
@@ -49,13 +48,18 @@ if ('dest' in query) {
 	}
 } else {
 	document.addEventListener("DOMContentLoaded", () => {
-		function createTextElement(elementName, text = undefined) {
-			let element = document.createElement(elementName);
+		/**
+		 * @param	{string}	elementName
+		 * @param	{string}	[text]
+		 * @return	{Element}
+		 */
+		const createTextElement = (elementName, text) => {
+			const element = document.createElement(elementName);
 			if (text !== undefined) {
 				element.appendChild(document.createTextNode(text));
 			}
 			return element;
-		}
+		};
 
 		document.body.appendChild(createTextElement("h1", "No redirect destination specified"));
 		document.body.appendChild(document.createTextNode("The redirect destination must be specified using the "));

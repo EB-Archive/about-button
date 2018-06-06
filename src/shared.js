@@ -15,27 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 "use strict";
-/* global browser */
+/* eslint-disable no-unused-vars */
 
 /**
  * Processes all i18n compatible tags on the page.
  *
- * @param {Object} subData The substitution data to use.
- * @returns {undefined}
+ * @param	{object} [subData=null] The substitution data to use.
  */
-const processI18n = async (subData) => {
-	function processSubstitution(translatable) {
+const processI18n = async (subData = null) => {
+	/**
+	 * @param	{HTMLElement} translatable
+	 * @return	{string[]}
+	 */
+	const processSubstitution = (translatable) => {
+		/** @type {string[]} */
 		let substitution = [];
 		if (translatable.dataset.i18nSubstitution) {
-			substitution = JSON.parse(translatable.dataset.i18nSubstitution);
+			substitution = Array.from(JSON.parse(translatable.dataset.i18nSubstitution));
 		}
 		if ((substitution.length > 0) && (subData !== null) && (typeof subData === "object")) {
 			substitution = substitution.map(sub => {
 				switch (sub) {
-					case "$protocol$":	return subData["protocol"] || "about:";
+					case "$protocol$":	return subData.protocol || "about:";
 					default: {
-						let subDataKey = /^\s*\$\s*(.+)\s*\$\s*$/.exec(sub);
-						if (subDataKey) {
+						const subDataKey = /^\s*\$\s*(.+)\s*\$\s*$/.exec(sub);
+						if (subDataKey && subData[subDataKey]) {
 							return subData[subDataKey];
 						}
 						return sub;
@@ -44,24 +48,24 @@ const processI18n = async (subData) => {
 			});
 		}
 		return substitution;
-	}
+	};
 
 	document.querySelectorAll("[data-i18n]").forEach(translatable => {
-		let text = getMessage(translatable.dataset.i18n, processSubstitution(translatable));
+		const text = getMessage(translatable.dataset.i18n, processSubstitution(translatable));
 		if (text.length > 0) {
 			insertI18n(text, translatable);
 		}
 	});
 
 	document.querySelectorAll("[data-i18n-label]").forEach(translatable => {
-		let text = getMessage(translatable.dataset.i18nLabel, processSubstitution(translatable));
+		const text = getMessage(translatable.dataset.i18nLabel, processSubstitution(translatable));
 		if (text.length > 0) {
 			translatable.setAttribute("label", text);
 		}
 	});
 
 	document.querySelectorAll("[data-i18n-title]").forEach(translatable => {
-		let text = getMessage(translatable.dataset.i18nTitle, processSubstitution(translatable));
+		const text = getMessage(translatable.dataset.i18nTitle, processSubstitution(translatable));
 		if (text.length > 0) {
 			translatable.setAttribute("title", text);
 		}
@@ -71,7 +75,7 @@ const processI18n = async (subData) => {
 /**
  * Inserts the i18n string to the node.
  *
- * @param	{String}	i18n The content of messages.json
+ * @param	{string}	i18n The content of messages.json
  * @param	{Element}	node The Node to put stuff in
  */
 const insertI18n = async (i18n, node) => {
@@ -87,9 +91,9 @@ const insertI18n = async (i18n, node) => {
 /**
  * Translates a message.
  *
- * @param	{String}	messageName	The name of the message, as specified in the messages.json file.
- * @param	{String|String[]}	[substitutions]	A single substitution string, or an array of substitution strings.
- * @return	{String}	Message localized for the current locale.
+ * @param	{string}	messageName	The name of the message, as specified in the messages.json file.
+ * @param	{string[]}	[substitutions]	A single substitution string, or an array of substitution strings.
+ * @return	{string}	Message localized for the current locale.
  */
 const getMessage = (messageName, substitutions) => {
 	if (!/^[a-zA-Z0-9_@]+$/.test(messageName)) {
@@ -117,15 +121,14 @@ const getMessage = (messageName, substitutions) => {
 /**
  * Left pads a String.
  *
- * @param	{String}	string	The string to left pad.
- * @param	{Number}	[size=0]	The size to expand the string to.
- * @param	{String}	[c=" "]	The character to use to pad the string.
- *
- * @return	{String}	The left padded string.
+ * @param	{string}	string	The string to left pad.
+ * @param	{number}	[size=0]	The size to expand the string to.
+ * @param	{string|*}	[c=" "]	The character to use to pad the string.
+ * @return	{string}	The left padded string.
  */
 const leftPad = (string, size = 0, c = " ") => {
 	c	= String(c);
 	string	= String(string);
-	size	-= string.length;
+	size	= Number(size) - string.length;
 	return	(size > 0 ? c[0].repeat(size) : "") + string;
 };

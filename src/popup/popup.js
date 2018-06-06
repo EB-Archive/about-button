@@ -15,36 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 "use strict";
-/* global browser, Promise */
-
-/**
- * @typedef	{Object}	Category
- * @property	{String}	category	The category ID
- * @property	{AboutPage[]}	content	All the about: pages
- */
-/**
- * @typedef	{Object}	AboutPage
- * @property	{String}	url	The page URL
- * @property	{String}	[icon]	The page icon
- * @property	{Boolean}	privileged	If the page is privileged
- * @property	{String}	[description]	The description
- * @property	{String[]}	[alias]	All the URL aliases of this page
- * @property	{AboutPageQuery[][]}	[query]	All the about: page queries
- * @property	{String}	[strict_min_version]	The minimum version of the browser that supports this version
- * @property	{String}	[strict_max_version]	The maximum version of the browser that supports this version
- */
-/**
- * @typedef	{Object}	AboutPageQuery
- * @property	{String}	value	The value of the query
- * @property	{String}	[icon]	The query icon
- */
-/**
- * @typedef	{Object}	BrowserInfo
- * @property	{String}	name
- * @property	{String}	vendor
- * @property	{String}	version
- * @property	{String}	buildID
- */
 
 /**
  * Used to toggle visibility of the debug button.
@@ -52,9 +22,9 @@
  * I’m not too worried about making this look good right
  * now, as it’s only intended for debugging purposes.
  *
- * @type Boolean
+ * @type	{boolean}
  */
-let isDebug = false;
+const isDebug = false;
 
 /**
  * Used to allow opening of:
@@ -62,13 +32,13 @@ let isDebug = false;
  * <li>`about:addons` by opening the extension configuration.
  * <li>`about:credits` by opening <a href="https://www.mozilla.org/credits">https://www.mozilla.org/credits</a>.
  * </ul>
- * @type Boolean
+ * @type	{boolean}
  */
-let usePagesShim = true;
+const usePagesShim = true;
 
-/** @type Object */
-let pagesShims = {
-	"Firefox": ["about:addons", "about:credits"]
+/** @type {{[browser: string]: string[]}} */
+const pagesShims = {
+	"Firefox": ["about:addons", "about:credits"],
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -82,8 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 	});
-	browser.runtime.onMessage.addListener((message, sender, resolve) => {
-		let messageType = String(message.method);
+	browser.runtime.onMessage.addListener(async (message) => {
+		const messageType = String(message.method);
 		switch (messageType) {
 			case "pagesChanged": {
 				reload();
@@ -91,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 	if (isDebug) {
-		let button = document.getElementById("showDisabledButtons");
+		const button = document.getElementById("showDisabledButtons");
 		button.style.display = "inline-block";
 		button.addEventListener("click", async () => {
 			const showDisabledButtons = await browser.storage.local.get({ showDisabledButtons: false });
@@ -103,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 	return Promise.all([
 		i18nInit(),
-		reload()
+		reload(),
 	]);
 });
 
@@ -114,18 +84,18 @@ document.addEventListener("contextmenu", evt => {
 /**
  * Checks if the suppplied page is shimmed.
  *
- * @param {AboutPage} page The page to check.
- * @param {String} url The page’s url with the protocol to check.
- * @param {BrowserInfo} browserInfo The browser info.
+ * @param	{AboutPage}	page The page to check.
+ * @param	{string}	url The page’s url with the protocol to check.
+ * @param	{BrowserInfo}	browserInfo The browser info.
  *
- * @return {Boolean} If the page is shimmed.
+ * @return	{boolean}	If the page is shimmed.
  */
 function isShimmed(page, url, browserInfo) {
 	if (usePagesShim) {
 		if (page.shim)
 			return true;
-		let shims = pagesShims[browserInfo.name] || [];
-		for (let p of shims) {
+		const shims = pagesShims[browserInfo.name] || [];
+		for (const p of shims) {
 			if (page.url === p || url === p) {
 				return true;
 			}
@@ -137,37 +107,36 @@ function isShimmed(page, url, browserInfo) {
 /**
  * Applies internationalization to the popup.
  *
- * @return {undefined}
+ * @return 	{void}
  */
 async function i18nInit() {
 	const [
-		protocol
+		protocol,
 	] = await Promise.all([
-		browser.runtime.sendMessage({ method: "getScheme" })
+		browser.runtime.sendMessage({ method: "getScheme" }),
 	]);
 
 	document.getElementById("main").appendChild(noKnownPages(protocol, true));
 	document.getElementById("status-separator").classList.add("hidden");
 
 	return processI18n({
-		protocol
+		protocol,
 	});
 }
 
 /**
- * @param {String} defaultScheme
- * @param {Boolean} showDisabledButtons
- *
- * @returns {HTMLDivElement}
+ * @param	{string}	defaultScheme
+ * @param	{boolean}	showDisabledButtons
+ * @return	{HTMLDivElement}
  */
 function noKnownPages(defaultScheme, showDisabledButtons) {
-	if (typeof showDisabledButtons === undefined)
+	if (typeof showDisabledButtons === "undefined")
 		showDisabledButtons = true;
 
-	let panel = document.createElement("div");
+	const panel = document.createElement("div");
 	panel.classList.add("panel-section", "panel-section-header");
 
-	let protocol = document.createElement("div");
+	const protocol = document.createElement("div");
 	protocol.classList.add("text-section-header");
 	protocol.appendChild(document.createTextNode(getMessage(`popup_unsupported_${showDisabledButtons ? "unknown" : "privilegedOnly"}`, defaultScheme)));
 
@@ -179,12 +148,13 @@ let reloadCounter = 0;
 
 /**
  * (Re-)load the current popup.
+ * @return	{void}
  */
-async function reload() {
+const reload = async () => {
 	if (reloadCounter++ > 0) {
 		if (reloadCounter > 2)
 			reloadCounter = 2;
-		return;
+		return undefined;
 	}
 	let result = await _reload();
 	if (reloadCounter > 1) {
@@ -192,68 +162,61 @@ async function reload() {
 	}
 	reloadCounter = 0;
 	return result;
-}
+};
 
 /**
  * Actually (re-)load the current popup.
  *
  * @private
  */
-async function _reload() {
-	let main = document.getElementById("main");
+const _reload = async () => {
+	const main	= document.getElementById("main");
 
-	let status = document.getElementById("status");
-	let statusContainer = document.getElementById("status-container");
-	let statusSeparator = document.getElementById("status-separator");
+	const status	= document.getElementById("status");
+	const statusContainer	= document.getElementById("status-container");
+	const statusSeparator	= document.getElementById("status-separator");
 
 	status.textContent = "";
 	statusContainer.classList.add("hidden");
 
 	try {
+		/** @type {{0:{categories:Category[],dataName:string,defaultScheme:string,showDisabledButtons:boolean},1:browser.runtime.BrowserInfo}} */
 		const [
 			{
-				/** @type Category[] */
 				categories,
-				/** @type String */
 				dataName,
-				/** @type String */
 				defaultScheme,
-				/** @type Boolean */
-				showDisabledButtons
+				showDisabledButtons,
 			},
-			/** @type BrowserInfo */
-			browserInfo
+			browserInfo,
 		] = await Promise.all([
 			browser.runtime.sendMessage({ method: "getPages" }).then(response => {
-				response.categories	= JSON.parse(response.categories);
 				response.showDisabledButtons	= response.showDisabledButtons || false;
 				return response;
 			}),
-			("getBrowserInfo" in browser.runtime ? browser.runtime.getBrowserInfo() : Promise.resolve({
+			(browser.runtime.getBrowserInfo ? browser.runtime.getBrowserInfo() : {
 				// Assume running under Google Chrome for now, because the minimum
 				// supported Firefox version supports `browser.runtime.getBrowserInfo()`
 				// and we currently only have code for Mozilla Firefox and Google Chrome.
 				// TODO: Dynamically resolve this once Opera and Edge are supported!
-				name: "Chrome",
-				vendor: "Google",
-				version: "Unknown",
-				buildID: "Unknown"
-			}))
+				name:	"Chrome",
+				vendor:	"Google",
+				version:	"Unknown",
+				buildID:	"Unknown",
+			}),
 		]);
 
 		if (!showDisabledButtons) {
-			let statusMessage = document.createElement("div");
+			const statusMessage = document.createElement("div");
 			statusMessage.appendChild(document.createTextNode(getMessage("popup_privilegedHidden")));
 			status.appendChild(statusMessage);
 			statusContainer.classList.remove("hidden");
 		}
 
 		main.textContent = "";
-		for (/** @type Category */ const category of categories) {
-			/** @type HTMLDivElement */
+		for (const category of categories) {
 			const header = document.createElement("div");
 			header.classList.add("panel-section", "panel-section-header");
-			/** @type HTMLDivElement */
 			const headerText = document.createElement("div");
 			headerText.classList.add("text-section-header");
 			let categoryName = getMessage(`category_${category.category}`);
@@ -261,7 +224,7 @@ async function _reload() {
 			if (categoryName.length === 0) {
 				// The category hasn't been translated, so let’s use the ID
 				// TODO: Handle `camelCase` words
-				for (/** @type String */ let word of category.category.split(/[\s_-]/)) {
+				for (/** @type {String} */ let word of category.category.split(/[\s_-]/)) {
 					word = word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
 					if (categoryName.length > 0)
 						categoryName += ` ${word}`;
@@ -273,10 +236,10 @@ async function _reload() {
 			headerText.appendChild(document.createTextNode(categoryName));
 			header.appendChild(headerText);
 
-			/** @type HTMLSectionElement */
+			/** @type {HTMLSectionElement} */
 			const content = document.createElement("section");
 			content.classList.add("panel-section", "panel-section-list");
-			for (/** @type AboutPage */ const page of category.content) {
+			for (const page of category.content) {
 				// Ensure that this page is supported by this browser version
 				if ("strict_min_version" in page) {
 					if (browserInfo.version.localeCompare(page.strict_min_version, [], {numeric: true, caseFirst: "upper"}) < 0) {
@@ -294,7 +257,7 @@ async function _reload() {
 				}
 
 				let disabled = false;
-				let url = page.url.includes(':') ? page.url : defaultScheme + page.url;
+				const url = page.url.includes(":") ? page.url : defaultScheme + page.url;
 				if (page.privileged && !isShimmed(page, url, browserInfo)) {
 					disabled = true;
 					if (!showDisabledButtons)
@@ -318,7 +281,7 @@ async function _reload() {
 						} else if (usePagesShim && url === "about:addons") {
 							browser.runtime.openOptionsPage();
 						} else if (usePagesShim && page.shim) {
-							browser.tabs.create({url: (page.shim.includes(':') ? page.shim : defaultScheme + page.shim)});
+							browser.tabs.create({url: (page.shim.includes(":") ? page.shim : defaultScheme + page.shim)});
 						} else {
 							browser.tabs.create({url: "/redirect/redirect.xhtml?dest=" + encodeURIComponent(url)});
 						}
@@ -337,7 +300,7 @@ async function _reload() {
 				}
 				if ("query" in page) {
 					{
-						let hasQuery = getMessage("popup_tooltip_hasQuery");
+						const hasQuery = getMessage("popup_tooltip_hasQuery");
 						if (title.length > 0) {
 							title += `\n${hasQuery}`;
 						} else {
@@ -353,13 +316,13 @@ async function _reload() {
 						if (menu.hasChildNodes()) {
 							menu.appendChild(createSeparator());
 						}
-						/** @type AboutPageQuery[] */
+						/** @type {AboutPageQuery[]} */
 						const values = page.query[query];
-						for (/** @type AboutPageQuery */ const value of values) {
-							let menuitem = document.createElement("div");
-							let menuitemDescriptionKey = `page_${dataName}_${page.url}_${query}_${value.value}`;
-							let menuitemDescription = getMessage(menuitemDescriptionKey);
-							let queryUrl = `${url}?${query}=${value.value}`;
+						for (/** @type {AboutPageQuery} */ const value of values) {
+							const menuitem = document.createElement("div");
+							const menuitemDescriptionKey = `page_${dataName}_${page.url}_${query}_${value.value}`;
+							const menuitemDescription = getMessage(menuitemDescriptionKey);
+							const queryUrl = `${url}?${query}=${value.value}`;
 							if (value.icon && value.icon.length > 0) {
 								menuitem.appendChild(generateImg(value.icon));
 							}
@@ -381,7 +344,7 @@ async function _reload() {
 									} else if (usePagesShim && queryUrl === "about:addons") {
 										browser.runtime.openOptionsPage();
 									} else if (usePagesShim && page.shim) {
-										browser.tabs.create({url: (`${page.shim.includes(':') ? page.shim : defaultScheme + page.shim}?${query}=${value.value}`)});
+										browser.tabs.create({url: (`${page.shim.includes(":") ? page.shim : defaultScheme + page.shim}?${query}=${value.value}`)});
 									} else {
 										browser.tabs.create({url: "/redirect/redirect.xhtml?dest=" + encodeURIComponent(queryUrl)});
 									}
@@ -397,14 +360,14 @@ async function _reload() {
 						evt.stopImmediatePropagation();
 						button.dataset.contextmenuVisible = true;
 					});
-					button.addEventListener("mouseleave", evt => {
+					button.addEventListener("mouseleave", () => {
 						button.dataset.contextmenuVisible = false;
 					}, {passive: true});
 				}
 				if (page.alias.length > 0) {
 					let aliases = getMessage("popup_tooltip_aliases");
 					page.alias.forEach(alias => {
-						aliases += `\n${alias.includes(':') ? alias : defaultScheme + alias}`;
+						aliases += `\n${alias.includes(":") ? alias : defaultScheme + alias}`;
 					});
 					if (title.length > 0) {
 						title += `\n${aliases}`;
@@ -432,18 +395,18 @@ async function _reload() {
 		}
 	} catch (error) {
 		console.warn(error);
-		let statusMessage = document.createElement("div");
+		const statusMessage = document.createElement("div");
 		statusMessage.appendChild(document.createTextNode(error));
 		status.appendChild(statusMessage);
 		statusContainer.classList.remove("hidden");
 	}
-}
+};
 
 /**
  * Creates a <code>&lt;div class="text"&gt;</code> element containing the supplied text.
  *
- * @param	{String}	text	The text to use.
- * @returns	{HTMLDivElement}	The element containing the text node.
+ * @param	{string}	text	The text to use.
+ * @return	{HTMLDivElement}	The element containing the text node.
  */
 function createTextElement(text) {
 	const textElement = document.createElement("div");
@@ -455,7 +418,7 @@ function createTextElement(text) {
 /**
  * Creates a <code>&lt;div class="panel-section-separator"&gt;</code> element.
  *
- * @returns	{HTMLDivElement}	The element.
+ * @return	{HTMLDivElement}	The element.
  */
 function createSeparator() {
 	const hr = document.createElement("div");
@@ -466,7 +429,7 @@ function createSeparator() {
 /**
  * Creates an <code>&lt;img&gt;</code> element for the specified image.
  *
- * @param	{String}	image	The image file name
+ * @param	{string}	image	The image file name
  * @return	{HTMLImgElement}	The image tag
  */
 function generateImg(image) {

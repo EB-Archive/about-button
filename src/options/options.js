@@ -15,18 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 "use strict";
-/* global browser, Promise */
 
 document.addEventListener("DOMContentLoaded", () => {
 	return Promise.all([
 		i18nInit(),
-		loadOptions()
+		loadOptions(),
 	]);
 });
 
 const loadOptions = async () => {
 	const flattenedData = {};
-	((data, key = null) => {
+	/**
+	 * @param	{*}	data
+	 * @param	{string}	[key]
+	 */
+	const flattenData = (data, key = null) => {
 		for (const k in data) {
 			const flattenedKey = (key === null ? k : `${key}.${k}`);
 			const value = data[k];
@@ -36,26 +39,28 @@ const loadOptions = async () => {
 				flattenedData[flattenedKey] = value;
 			}
 		}
-	})(await browser.storage.local.get());
+	};
+	flattenData(await browser.storage.local.get());
 
+	/** @type {HTMLElement[]} */
 	const elements = document.querySelectorAll("select[data-save], input[data-save]");
 
 	for (const e of elements) {
 		const value = (e.dataset.save in flattenedData ? flattenedData[e.dataset.save] : e.dataset.saveDefault || undefined);
-		switch (e.tagName.toUpperCase()) {
-			case "INPUT": {
+		switch (e.tagName.toLowerCase()) {
+			case "input": {
 				e.addEventListener("input", saveOptions);
 				switch (e.type.toLowerCase()) {
 					case "checkbox": {
 						if (value !== undefined) e.checked = value;
 						break;
 					} default: {
-						console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e);
+						console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e.type, e);
 						break;
 					}
 				}
 				break;
-			} case "SELECT": {
+			} case "select": {
 				e.addEventListener("change", saveOptions);
 				if (value !== undefined) {
 					const option = e.querySelector(`[value="${value}"]`);
@@ -67,10 +72,8 @@ const loadOptions = async () => {
 					}
 				}
 				return;
-			} case "BUTTON": {
-				e.addEventListener("click", saveOptions);
 			} default: {
-				console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e);
+				console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e.tagName, e);
 				break;
 			}
 		}
@@ -78,34 +81,36 @@ const loadOptions = async () => {
 };
 
 const saveOptions = async () => {
+	/** @type {HTMLElement[]} */
 	const elements = document.querySelectorAll("select[data-save], input[data-save]");
-	let saveData = {};
+	const saveData = {};
 
 	for (const e of elements) {
 		const tree = e.dataset.save.split(".");
 		let stackPos = saveData;
 		for (var i = 0; i < tree.length; i++) {
-			let key = tree[i];
+			const key = tree[i];
 			if (i === tree.length - 1) {
-				switch (e.tagName.toUpperCase()) {
-					case "INPUT": {
+				switch (e.tagName.toLowerCase()) {
+					case "input": {
 						switch (e.type.toLowerCase()) {
 							case "checkbox": {
 								saveData[key] = e.checked;
 								break;
 							} default: {
-								console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e);
+								console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e.type, e);
 								break;
 							}
 						}
 						break;
-					} case "SELECT": {
-						let selectedOption = e.item(e.selectedIndex);
-						let value = selectedOption.value;
+					} case "select": {
+						/** @type {HTMLOptionElement} */
+						const selectedOption = e.item(e.selectedIndex);
+						const {value} = selectedOption;
 						saveData[key] = value;
 						break;
 					} default: {
-						console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e);
+						console.warn("[about-button@exe-boss]", "Unexpected element in saveOptions()", e.tagName, e);
 						break;
 					}
 				}
@@ -124,12 +129,13 @@ const saveOptions = async () => {
 
 /**
  * Applies internationalization to the current page.
+ * @return {void}
  */
 const i18nInit = async () => {
 	const [
-		protocol
+		protocol,
 	] = await Promise.all([
-		browser.runtime.sendMessage({ method: "getScheme" })
+		browser.runtime.sendMessage({ method: "getScheme" }),
 	]);
 
 	return processI18n({ protocol });

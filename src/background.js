@@ -15,78 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 "use strict";
-/* global browser */
 
 /**
- * @typedef	{Object}	Category
- * @property	{String}	category	The category ID
- * @property	{AboutPage[]}	content	All the about: pages
+ * All the registered pages.
+ * @type {Category[]}
  */
-/**
- * @typedef	{Object}	AboutPage
- * @property	{String}	url	The page URL
- * @property	{String}	[icon]	The page icon
- * @property	{Boolean}	privileged	If the page is privileged
- * @property	{String}	[description]	The description
- * @property	{String[]}	[alias]	All the URL aliases of this page
- * @property	{AboutPageQuery[][]}	[query]	All the about: page queries
- * @property	{String}	[strict_min_version]	The minimum version of the browser that supports this version
- * @property	{String}	[strict_max_version]	The maximum version of the browser that supports this version
- */
-/**
- * @typedef	{Object}	AboutPageQuery
- * @property	{String}	value	The value of the query
- * @property	{String}	[icon]	The query icon
- */
-/**
- * @typedef	{Object}	BrowserInfo
- * @property	{String}	name
- * @property	{String}	vendor
- * @property	{String}	version
- * @property	{String}	buildID
- */
-
-/** All the registered pages. @type Category[] */
 const ABOUT_PAGES	= [];
 const VERSION_REGEX	= /^\s*([\d.]+?)(?:\.0)*\s*$/;
 
-var defaultScheme	= null;
-var dataName	= null;
+/** @type {string} */
+let defaultScheme	= null;
+/** @type {string} */
+let dataName	= null;
 
 /**
- * @param {String} config The name of the JSON config file in the config directory
- *
- * @return {Promise.&lt;Response&gt;} The content of the JSON config file
+ * @param	{string}	config	The name of the JSON config file in the config directory
+ * @return	{Promise<Response>}	The content of the JSON config file
  */
-function getData(config) {
+const getData = async (config) => {
 	return fetch(`config/${config}.json`);
-}
+};
 
-(async function() {
+(async () => {
 	/**
-	 * @param {BrowserInfo} browserInfo
-	 * @return {undefined}
+	 * @param {browser.runtime.BrowserInfo} browserInfo
 	 */
-	let initPages = async (browserInfo) => {
-		/**
-		 * @typedef {Object} BrowserData
-		 * @property {BrowserData$Browser} default
-		 * @property {Object} browsers
-		 */
-		/**
-		 * @typedef {Object} BrowserData$Browser
-		 * @property {String} default_scheme
-		 * @property {String} data
-		 */
-		/**
-		 * @type BrowserData
-		 * @param {Response} r
-		 */
-		let browserData = await getData("browsers").then(r => r.json());
-		/** @type BrowserData$Browser */
-		let specificData = browserData.browsers[browserInfo.name];
+	const initPages = async browserInfo => {
+		/** @type {BrowserData} */
+		const browserData	= await getData("browsers").then(r => r.json());
+		let specificData	= browserData.browsers[browserInfo.name];
 
-		/** @type Response */
+		/** @type {Response} */
 		let response = null;
 		if (specificData) {
 			dataName = specificData.data;
@@ -99,26 +58,28 @@ function getData(config) {
 			dataName = browserData.default.data;
 			response = await getData(dataName);
 			if (!response.ok) {
-				throw new Error("Cannot load about: URL configuration");
+				throw new Error("Cannot load about: scheme configuration");
 			}
 		}
 
 		defaultScheme = specificData.default_scheme;
-		(await response.json()).forEach(category => {
+		/** @type {Category[]} */
+		const categories = await response.json();
+		for (const category of categories) {
 			if (category.content) {
-				category.content.forEach(page => {
-					page.category = {
+				for (const page of category.content) {
+					const p = Object.assign({}, page, {category: {
 						category:	category.category,
-						priority:	category.priority
-					};
-					if (!registerPage(page, true)) {
+						priority:	category.priority,
+					}});
+					if (!registerPage(p, true)) {
 						console.warn("[about:about Button]", "Failed to register page:", page.url);
 					}
-				});
+				}
 			} else {
 				getCategory(category.category.toLowerCase(), category.priority);
 			}
-		});
+		}
 	};
 
 	if (browser.runtime.getBrowserInfo) {
@@ -132,22 +93,22 @@ function getData(config) {
 			name:	"Chrome",
 			vendor:	"Google",
 			version:	"Unknown",
-			buildID:	"Unknown"
+			buildID:	"Unknown",
 		});
 	}
 })();
 
 /**
  *
- * @param {String} category The category ID.
- * @param {Number} priority The priority.
- * @returns {AboutPage[]} The about: pages
+ * @param	{string}	category	The category ID.
+ * @param	{number}	priority	The priority.
+ * @return	{AboutPage[]}	The about: pages
  */
-function getCategory(category, priority) {
-	for (/** @type Category */ let c of ABOUT_PAGES) {
+const getCategory = (category, priority) => {
+	for (const c of ABOUT_PAGES) {
 		if (c.category.localeCompare(category, {
 			sensitivity: "accent",
-			numeric: true
+			numeric: true,
 		}) === 0) {
 			if (priority !== undefined && c.priority === 0) {
 				c.priority = priority;
@@ -156,11 +117,11 @@ function getCategory(category, priority) {
 		}
 	}
 
-	let content = [];
+	const content = [];
 	ABOUT_PAGES.push({
 		category:	category,
 		priority:	priority || 0,
-		content:	content
+		content:	content,
 	});
 	ABOUT_PAGES.sort((a, b) => {
 		if (a.priority !== b.priority) {
@@ -168,21 +129,20 @@ function getCategory(category, priority) {
 		}
 		return a.category.localeCompare(b.category, {
 			sensitivity: "accent",
-			numeric: true
+			numeric: true,
 		});
 	});
 
 	return content;
-}
+};
 
 /**
- * @param {AboutPage} message
- * @param {Boolean} privileged
- *
- * @return {undefined}
+ * @param	{AboutPage}	message
+ * @param	{boolean}	privileged
+ * @return	{boolean}	If the page was registered
  */
-function registerPage(message, privileged) {
-	/** @type AboutPage[] */
+const registerPage = (message, privileged) => {
+	/** @type {AboutPage[]} */
 	let aboutPages;
 	if (privileged && typeof message.category === "object") {
 		aboutPages = getCategory(String(message.category.category || "general").toLowerCase(), message.category.priority);
@@ -192,69 +152,60 @@ function registerPage(message, privileged) {
 
 	/** @type AboutPage */
 	var data = {
-		url: String(message.url),
-		icon: String((typeof message.icon !== undefined && typeof message.icon !== null) ? message.icon : ""),
-		privileged: Boolean(message.privileged),
-		description: "",
-		alias: []
+		url:	String(message.url),
+		icon:	String(message.icon ? message.icon : ""),
+		privileged:	Boolean(message.privileged),
+		description:	"",
+		alias:	[],
 	};
 
-	if ("alias" in message) {
-		let length = new Number(message.alias.length);
+	if (message.alias instanceof Array) {
+		const length = Number(message.alias.length);
 		for (let i = 0; i < length; i++) {
-			data.alias[i] = new String(message.alias[i]);
+			data.alias[i] = String(message.alias[i]);
 		}
 	}
 
-	if ("query" in message) {
+	if (message.query && typeof message.query === "object") {
 		data.query = {};
-		for (let query in message.query) {
-			let values = message.query[query];
-			let copy = [];
-			data.query[String(query)] = copy;
-			for (let i = 0; i < values.length; i++) {
-				let value = values[i];
-				copy[i] = {
-					value: String(value.value),
-					icon: String((typeof value.icon !== undefined && typeof value.icon !== null) ? value.icon : "")
-				};
-			}
+		for (const query in message.query) {
+			data.query[String(query)] = Array.from(message.query[query]);
 		}
 	}
 
-	if ("strict_min_version" in message) {
-		let minVer = String(message.strict_min_version);
-		let minVerData = VERSION_REGEX.exec(minVer);
+	if (message.strict_min_version) {
+		const minVer = String(message.strict_min_version);
+		const minVerData = VERSION_REGEX.exec(minVer);
 		if (minVerData) {
-			data.strict_min_version = minVerData[1];
+			[,data.strict_min_version] = minVerData;
 		}
 	}
 
 	if ("strict_max_version" in message) {
-		let maxVer	= String(message.strict_max_version);
-		let maxVerData	= VERSION_REGEX.exec(maxVer);
+		const maxVer	= String(message.strict_max_version);
+		const maxVerData	= VERSION_REGEX.exec(maxVer);
 		if (maxVerData) {
-			data.strict_max_version = maxVerData[1];
+			[,data.strict_max_version] = maxVerData;
 		}
 	}
 
-	let path = removeProtocolFromURL(data.url);
+	const path = removeProtocolFromURL(data.url);
 	let isNew = true;
 	if (privileged) {
-		if ("description" in message)
-			data.description = new String(message.description);
+		if (message.description)
+			data.description = String(message.description);
 		for (let i = 0; i < aboutPages.length; i++) {
-			let d = aboutPages[i];
+			const d = aboutPages[i];
 			if (path.localeCompare(removeProtocolFromURL(d.url), {sensitivity: "accent", numeric: true}) === 0) {
 				aboutPages.slice(i, 1);
 			}
 		}
 		// Shims are only available to be created by a trusted source (i.e. this extension)
 		if ("shim" in message) {
-			data.shim = new String(message.shim);
+			data.shim = String(message.shim);
 		}
 	} else {
-		for (let d in aboutPages) {
+		for (const d in aboutPages) {
 			if (path.localeCompare(removeProtocolFromURL(d.url), {sensitivity: "accent", numeric: true}) === 0) {
 				isNew = false;
 				data = d;
@@ -268,11 +219,11 @@ function registerPage(message, privileged) {
 		aboutPages.sort((a, b) => {
 			return removeProtocolFromURL(a.url).localeCompare(removeProtocolFromURL(b.url), {
 				sensitivity: "accent",
-				numeric: true
+				numeric: true,
 			});
 		});
 		browser.runtime.sendMessage({
-			method: "pagesChanged"
+			method: "pagesChanged",
 		}).catch(error => {
 			if (!error.message.startsWith("Could not establish connection. Receiving end does not exist."))
 				console.error(error);
@@ -280,47 +231,51 @@ function registerPage(message, privileged) {
 	}
 
 	if (!privileged && !data.description && message.description) {
-		data.description = new String(message.description);
+		data.description = String(message.description);
 	}
 	return isNew;
-}
+};
 
 /**
- *
- * @param {String} url
- * @return {String}
+ * @param	{string} url
+ * @return	{string}
  */
-function removeProtocolFromURL(url) {
-	let path = /(?:\w+:(?:\/\/)?)?(.*)/.exec(url);
-		return path ? path[1] : url;
-}
+const removeProtocolFromURL = url => {
+	const path = /(?:[a-zA-Z0-9.+-]+:(?:\/\/)?)?(.*)/.exec(url);
+	return path ? path[1] : url;
+};
 
-browser.runtime.onMessage.addListener(async (message, sender) => {
-	let messageType = String(message.method);
+browser.runtime.onMessage.addListener(async (message) => {
+	const messageType = String(message.method);
 	switch (messageType) {
 		case "registerPage": {
 			return registerPage(message.data, true);
 		} case "getPages": {
-			let settings = await browser.storage.local.get({
-				showDisabledButtons: false
+			/** @type {{showDisabledButtons: boolean}} */
+			const {
+				showDisabledButtons,
+			} = await browser.storage.local.get({
+				showDisabledButtons: false,
 			});
 
 			return {
-				categories:	JSON.stringify(ABOUT_PAGES),
-				dataName:	dataName,
-				defaultScheme:	defaultScheme,
-				showDisabledButtons:	settings.showDisabledButtons
+				categories:	ABOUT_PAGES,
+				dataName,
+				defaultScheme,
+				showDisabledButtons,
 			};
 		} case "getScheme": {
 			return defaultScheme;
-		} default: {}
+		} default: {
+			return undefined;
+		}
 	}
 });
 
 // browser.runtime.onMessageExternal is only supported from FF 54.0+
 if ("onMessageExternal" in browser.runtime) {
-	browser.runtime.onMessageExternal.addListener(async (message, sender) => {
-		let messageType = String(message.method);
+	browser.runtime.onMessageExternal.addListener(async (message) => {
+		const messageType = String(message.method);
 		switch (messageType) {
 			case "registerPage": {
 				return registerPage(message.data, false);

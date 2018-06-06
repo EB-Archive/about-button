@@ -1,0 +1,6 @@
+# Lint the configuration files
+!/.*rc.js
+
+# Ignore vendor files
+/build/vendor/**
+/node_modules/**
