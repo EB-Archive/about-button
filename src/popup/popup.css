@@ -42,12 +42,9 @@ button, #main .panel-list-item, #open-options {
 /* +---------+ */
 
 .icon {
+	width:	16px;
 	vertical-align: middle;
 	margin-right:	8px;
-}
-
-.icon.missing {
-	margin-right:	24px;
 }
 
 /* +-----+ */
@@ -67,31 +64,16 @@ button, #main .panel-list-item, #open-options {
 	overflow-x:	hidden;
 }
 
-#main > div {
-	display:	flex;
-	flex-direction:	column;
-	width:	100%;
-	border-spacing:	8px;
+#main > .panel-section-header > .text-section-header {
+	flex-grow:	10;
+	text-align:	center;
 }
 
 #main > .panel-section-list {
 	margin-right:	16px;
 }
 
-#main > .panel-section-header {
-	padding-right:	32px;
-}
-
-#main > div > button {
-	margin:	4px;
-}
-
-#main > div > button,
-#main > div div {
-	line-height:	16px;
-}
-
-#main .panel-list-item, #main .panel-section, #open-options {
+#main > .panel-section-list > .panel-list-item {
 	width:	calc(100% + 16px) !important;
 }
 

@@ -11,6 +11,7 @@ module.exports = {
 	"extends": "eslint:recommended",
 	"globals": {
 		"getMessage":	false,
+		"hyperHTML":	false,
 		"insertI18n":	false,
 		"processI18n":	false,
 	},

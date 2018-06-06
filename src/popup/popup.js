@@ -64,8 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		const button = document.getElementById("showDisabledButtons");
 		button.style.display = "inline-block";
 		button.addEventListener("click", async () => {
-			const showDisabledButtons = await browser.storage.local.get({ showDisabledButtons: false });
-			return browser.storage.local.set({ showDisabledButtons: !showDisabledButtons });
+			const showDisabledButtons = await browser.storage.local.get({showDisabledButtons: false});
+			return browser.storage.local.set({showDisabledButtons: !showDisabledButtons});
 		});
 	}
 	document.getElementById("open-options").addEventListener("click", () => {
@@ -90,7 +90,7 @@ document.addEventListener("contextmenu", evt => {
  *
  * @return	{boolean}	If the page is shimmed.
  */
-function isShimmed(page, url, browserInfo) {
+const isShimmed = (page, url, browserInfo) => {
 	if (usePagesShim) {
 		if (page.shim)
 			return true;
@@ -102,14 +102,14 @@ function isShimmed(page, url, browserInfo) {
 		}
 	}
 	return false;
-}
+};
 
 /**
  * Applies internationalization to the popup.
  *
  * @return 	{void}
  */
-async function i18nInit() {
+const i18nInit = async () => {
 	const [
 		protocol,
 	] = await Promise.all([
@@ -122,14 +122,14 @@ async function i18nInit() {
 	return processI18n({
 		protocol,
 	});
-}
+};
 
 /**
  * @param	{string}	defaultScheme
  * @param	{boolean}	showDisabledButtons
  * @return	{HTMLDivElement}
  */
-function noKnownPages(defaultScheme, showDisabledButtons) {
+const noKnownPages = (defaultScheme, showDisabledButtons) => {
 	if (typeof showDisabledButtons === "undefined")
 		showDisabledButtons = true;
 
@@ -142,7 +142,7 @@ function noKnownPages(defaultScheme, showDisabledButtons) {
 
 	panel.appendChild(protocol);
 	return panel;
-}
+};
 
 let reloadCounter = 0;
 
@@ -215,12 +215,8 @@ const _reload = async () => {
 
 		main.textContent = "";
 		for (const category of categories) {
-			const header = document.createElement("div");
-			header.classList.add("panel-section", "panel-section-header");
-			const headerText = document.createElement("div");
-			headerText.classList.add("text-section-header");
+			/** @type {string} */
 			let categoryName = getMessage(`category_${category.category}`);
-
 			if (categoryName.length === 0) {
 				// The category hasn't been translated, so let’s use the ID
 				// TODO: Handle `camelCase` words
@@ -232,13 +228,14 @@ const _reload = async () => {
 						categoryName = word;
 				}
 			}
+			/** @type {HTMLElement} */
+			const header = hyperHTML`
+				<header class="panel-section panel-section-header">
+					<div class="text-section-header">${categoryName}</div>
+				</header>`;
 
-			headerText.appendChild(document.createTextNode(categoryName));
-			header.appendChild(headerText);
-
-			/** @type {HTMLSectionElement} */
-			const content = document.createElement("section");
-			content.classList.add("panel-section", "panel-section-list");
+			/** @type {HTMLElement} */
+			const content = hyperHTML`<section class="panel-section panel-section-list"/>`;
 			for (const page of category.content) {
 				// Ensure that this page is supported by this browser version
 				if ("strict_min_version" in page) {
@@ -257,6 +254,7 @@ const _reload = async () => {
 				}
 
 				let disabled = false;
+				/** @type {string} */
 				const url = page.url.includes(":") ? page.url : defaultScheme + page.url;
 				if (page.privileged && !isShimmed(page, url, browserInfo)) {
 					disabled = true;
@@ -264,16 +262,16 @@ const _reload = async () => {
 						continue;
 				}
 
-				/** @type HTMLDivElement */
-				const button = document.createElement("div");
-				const img = generateImg(page.icon);
-				button.classList.add("panel-list-item");
+				/** @type {HTMLDivElement} */
+				const button = hyperHTML`
+					<div class="panel-list-item">
+						${generateImg(page.icon)}
+						${createTextElement(url)}
+					</div>`;
 				if (disabled) {
 					button.dataset.disabled = true;
 					button.classList.add("disabled");
 				}
-				button.appendChild(img);
-				button.appendChild(createTextElement(url));
 				button.addEventListener("click", evt => {
 					if (evt.button === 0 && !button.dataset.disabled) {
 						if (!page.privileged) {
@@ -287,9 +285,9 @@ const _reload = async () => {
 						}
 					}
 				});
-				/** @type String */
 				let title	= "";
 				const descriptionKey	= `page_${dataName}_${page.url}`;
+				/** @type {string} */
 				const description	= getMessage(descriptionKey);
 				if (description.length > 0 && description !== descriptionKey) {
 					if (title.length > 0) {
@@ -308,30 +306,27 @@ const _reload = async () => {
 						}
 					}
 					const menuId = `${url}-menu`;
-					const menu = document.createElement("menu");
-					menu.setAttribute("id", menuId);
-					menu.classList.add("panel", "panel-section", "panel-section-list");
-					menu.dataset.type = "context";
+					/** @type {HTMLMenuElement} */
+					const menu = hyperHTML`<menu id="${menuId}" data-type="context"
+						class="panel panel-section panel-section-list"/>`;
 					for (const query in page.query) {
 						if (menu.hasChildNodes()) {
-							menu.appendChild(createSeparator());
+							menu.appendChild(hyperHTML`<div class="panel-section-separator"/>`);
 						}
 						/** @type {AboutPageQuery[]} */
 						const values = page.query[query];
 						for (/** @type {AboutPageQuery} */ const value of values) {
-							const menuitem = document.createElement("div");
 							const menuitemDescriptionKey = `page_${dataName}_${page.url}_${query}_${value.value}`;
-							const menuitemDescription = getMessage(menuitemDescriptionKey);
 							const queryUrl = `${url}?${query}=${value.value}`;
-							if (value.icon && value.icon.length > 0) {
-								menuitem.appendChild(generateImg(value.icon));
-							}
-							if (menuitemDescription.length > 0 && menuitemDescription !== menuitemDescriptionKey) {
-								menuitem.appendChild(createTextElement(menuitemDescription));
-							} else {
-								menuitem.appendChild(createTextElement(queryUrl));
-							}
-							menuitem.classList.add("panel-list-item");
+							/** @type {string} */
+							const menuitemDescription = getMessage(menuitemDescriptionKey,undefined,queryUrl);
+
+							/** @type {HTMLDivElement} */
+							const menuitem = hyperHTML`
+								<div class="panel-list-item">
+									${generateImg(value.icon)}
+									${createTextElement(menuitemDescription)}</div>
+								</div>`;
 							if (disabled) {
 								menuitem.dataset.disabled = true;
 								menuitem.classList.add("disabled");
@@ -403,44 +398,22 @@ const _reload = async () => {
 };
 
 /**
- * Creates a <code>&lt;div class="text"&gt;</code> element containing the supplied text.
+ * Creates a &lt;div class="text"&gt; element containing the supplied text.
  *
  * @param	{string}	text	The text to use.
  * @return	{HTMLDivElement}	The element containing the text node.
  */
-function createTextElement(text) {
-	const textElement = document.createElement("div");
-	textElement.classList.add("text");
-	textElement.appendChild(document.createTextNode(text));
-	return textElement;
-}
-
-/**
- * Creates a <code>&lt;div class="panel-section-separator"&gt;</code> element.
- *
- * @return	{HTMLDivElement}	The element.
- */
-function createSeparator() {
-	const hr = document.createElement("div");
-	hr.classList.add("panel-section-separator");
-	return hr;
-}
+const createTextElement = (text) => {
+	return hyperHTML`<div class="text">${{text: text}}</div>`;
+};
 
 /**
  * Creates an <code>&lt;img&gt;</code> element for the specified image.
  *
- * @param	{string}	image	The image file name
- * @return	{HTMLImgElement}	The image tag
+ * @param	{string}	[image]	The image file name
+ * @return	{HTMLImageElement}	The image tag
  */
-function generateImg(image) {
-	const img = document.createElement("img");
-	img.setAttribute("class",	"icon");
-	img.setAttribute("width",	"16px");
-	if (image && image.length !== 0) {
-//		img.setAttribute("src",	"/icons/SVG/" + image + ".svg");
-		img.setAttribute("src",	"/icons/256/" + image + ".png");
-	} else {
-		img.setAttribute("class",	"icon missing");
-	}
-	return img;
-}
+const generateImg = (image) => {
+	return hyperHTML`<img class="icon" src="${image && image.length > 0 ?
+		`/icons/256/${image}.png` : undefined}"/>`;
+};

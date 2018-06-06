@@ -93,9 +93,10 @@ const insertI18n = async (i18n, node) => {
  *
  * @param	{string}	messageName	The name of the message, as specified in the messages.json file.
  * @param	{string[]}	[substitutions]	A single substitution string, or an array of substitution strings.
+ * @param	{string}	[fallback]	The fallback text.
  * @return	{string}	Message localized for the current locale.
  */
-const getMessage = (messageName, substitutions) => {
+const getMessage = (messageName, substitutions, fallback) => {
 	if (!/^[a-zA-Z0-9_@]+$/.test(messageName)) {
 		// The message needs encoding
 		const regexp = /^[a-zA-Z0-9_@]$/;
@@ -115,7 +116,8 @@ const getMessage = (messageName, substitutions) => {
 		}
 		messageName = newMessage;
 	}
-	return browser.i18n.getMessage(messageName, substitutions);
+	const result = browser.i18n.getMessage(messageName, substitutions);
+	return (fallback && (result.length === 0 || result === messageName)) ? fallback : result;
 };
 
 /**

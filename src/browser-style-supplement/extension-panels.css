@@ -6,10 +6,9 @@
 
 .panel {
 	background-clip:	padding-box;
-	background-color:	#fcfcfc;
+	background-color:	#FCFCFC;
 	border:	1px solid rgba(24, 26, 27, .2);
 	box-shadow:	0 3px 5px rgba(24, 26, 27, .1),0 0 7px rgba(24, 26, 27, .1);
-	box-sizing:	content-box;
 	color:	#222426;
 	cursor:	default;
 	display:	flex;
@@ -31,17 +30,15 @@
 }
 
 .panel-list-item > menu[data-type="context"] {
-	display:	none;
+	display:	flex;
 	position:	absolute;
 	margin:	0;
 	z-index:	200;
-	top:	23px;
+	top:	calc(100% - 1px);
 	left:	15px;
-	width:	calc(100% - 64px);
-	max-width:	calc(100% - 64px);
+	right:	15px;
 }
 
-.panel-list-item:hover[data-contextmenu-visible="true"] > menu[data-type="context"] {
-	display:	block;
-	top:	22px;
+.panel-list-item:not([data-contextmenu-visible="true"]) > menu[data-type="context"] {
+	display:	none;
 }
