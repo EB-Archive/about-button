@@ -280,7 +280,7 @@ if ("onMessageExternal" in browser.runtime) {
 			case "registerPage": {
 				return registerPage(message.data, false);
 			} default: {
-				throw "Invalid message method: " + messageType;
+				throw `Invalid message method: ${messageType}`;
 			}
 		}
 	});

@@ -281,7 +281,7 @@ const _reload = async () => {
 						} else if (usePagesShim && page.shim) {
 							browser.tabs.create({url: (page.shim.includes(":") ? page.shim : defaultScheme + page.shim)});
 						} else {
-							browser.tabs.create({url: "/redirect/redirect.xhtml?dest=" + encodeURIComponent(url)});
+							browser.tabs.create({url: `/redirect/redirect.xhtml?dest=${encodeURIComponent(url)}`});
 						}
 					}
 				});
@@ -341,7 +341,7 @@ const _reload = async () => {
 									} else if (usePagesShim && page.shim) {
 										browser.tabs.create({url: (`${page.shim.includes(":") ? page.shim : defaultScheme + page.shim}?${query}=${value.value}`)});
 									} else {
-										browser.tabs.create({url: "/redirect/redirect.xhtml?dest=" + encodeURIComponent(queryUrl)});
+										browser.tabs.create({url: `/redirect/redirect.xhtml?dest=${encodeURIComponent(queryUrl)}`});
 									}
 								}
 							});
@@ -414,6 +414,6 @@ const createTextElement = (text) => {
  * @return	{HTMLImageElement}	The image tag
  */
 const generateImg = (image) => {
-	return hyperHTML`<img class="icon" src="${image && image.length > 0 ?
-		`/icons/256/${image}.png` : undefined}"/>`;
+	return hyperHTML`<img class="icon" src="${image && image.length > 0
+		? `/icons/256/${image}.png` : undefined}"/>`;
 };

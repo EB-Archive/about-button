@@ -21,6 +21,7 @@
 			{"url": "downloads",	"icon": "drive-down",	"privileged": true},
 			{"url": "healthreport",	"icon": "heart",	"privileged": true, "strict_max_version": "58.0"},
 			{"url": "home",	"icon": "house",	"privileged": false},
+			{"url": "library",	"icon": "inbox-images",	"privileged": true, "strict_min_version": "62.0"},
 			{"url": "license",	"icon": "report",	"privileged": false},
 			{"url": "logo",	"icon": "picture-empty",	"privileged": false},
 			{"url": "memory",	"icon": "memory",	"privileged": true},
@@ -32,6 +33,7 @@
 			{"url": "preferences",	"icon": "options-wrench",	"privileged": true},
 			{"url": "privatebrowsing",	"icon": "lock",	"privileged": true},
 			{"url": "profiles",	"icon": "group",	"privileged": true},
+			{"url": "restartrequired",	"icon": "arrow-rotate-anticlockwise-45",	"privileged": true, "strict_min_version": "62.0"},
 			{"url": "rights",	"icon": "receipt",	"privileged": false},
 			{"url": "robots",	"icon": "user-red",	"privileged": true},
 			{"url": "serviceworkers",	"icon": "script-gear",	"privileged": true},
@@ -43,7 +45,8 @@
 			{"url": "telemetry",	"icon": "chart-curve",	"privileged": true},
 			{"url": "url-classifier",	"icon": "link",	"privileged": true, "strict_min_version": "55.0"},
 			{"url": "webrtc",	"icon": "phone",	"privileged": true},
-			{"url": "welcomeback",	"icon": "emoticon-smile",	"privileged": true}
+			{"url": "welcome",	"icon": "emoticon-smile",	"privileged": true, "strict_min_version": "62.0"},
+			{"url": "welcomeback",	"icon": "brush",	"privileged": true}
 		]
 	},
 	{
