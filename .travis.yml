@@ -10,20 +10,21 @@ node_js:
 
 # The pre-install script
 before_install:
-    - yarn global add greenkeeper-lockfile@1
+    - npm i -g pnpm
+    - pnpm i -g greenkeeper-lockfile@1
 
 # The install script
 install:
-    - yarn install
+    - pnpm install
 
 # The pre-build script
 before_script:
     - greenkeeper-lockfile-update
-    - yarn run lint
+    - pnpm run lint
 
 # The build script
 script:
-    - yarn run build
+    - pnpm run build
 
 # The post-build script
 after_script:

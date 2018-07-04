@@ -19,6 +19,8 @@
 !/.*rc.json
 !/gulpfile*
 !/package*
+!/pnpm*
+!/shrinkwrap*
 !/yarn*
 !/.*ignore
 
