@@ -1,6 +1,6 @@
 {
 	"name": "@exe-boss/x.about-button",
-	"version": "0.1.20",
+	"version": "0.1.21a1",
 	"author": "ExE Boss",
 	"scripts": {
 		"build": "gulp build",
