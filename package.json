@@ -20,6 +20,7 @@
 	},
 	"homepage": "https://github.com/ExE-Boss/about-button#readme",
 	"devDependencies": {
+		"@exe-boss/eslint-config": "^0.1.0",
 		"@types/firefox-webext-browser": "*",
 		"@types/gulp": "*",
 		"@types/gulp-replace": "*",

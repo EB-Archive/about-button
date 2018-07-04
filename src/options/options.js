@@ -88,7 +88,7 @@ const saveOptions = async () => {
 	for (const e of elements) {
 		const tree = e.dataset.save.split(".");
 		let stackPos = saveData;
-		for (var i = 0; i < tree.length; i++) {
+		for (let i = 0; i < tree.length; i++) {
 			const key = tree[i];
 			if (i === tree.length - 1) {
 				switch (e.tagName.toLowerCase()) {

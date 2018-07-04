@@ -151,7 +151,7 @@ const registerPage = (message, privileged) => {
 	}
 
 	/** @type AboutPage */
-	var data = {
+	let data = {
 		url:	String(message.url),
 		icon:	String(message.icon ? message.icon : ""),
 		privileged:	Boolean(message.privileged),
