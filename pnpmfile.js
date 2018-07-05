@@ -19,6 +19,7 @@
 
 /** @type {{resolutions:Record<string,string>}} */
 const {resolutions: PACKAGE_RESOLUTIONS} = require("./package.json");
+const semver = require("semver");
 
 /**
  * @param	{Record<string,string>} dependencies
@@ -75,7 +76,7 @@ const readPackage = (pkg, logger) => {
 
 	switch (pkg.name) {
 		case "eslint":
-			if (/^4\b/.test(pkg.version))
+			if (semver.major(pkg.version) >= 4)
 				setDep("eslint-plugin-no-unsafe-innerhtml", "^1.0.16");
 			break;
 		case "addons-linter":
