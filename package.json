@@ -5,7 +5,7 @@
 	"scripts": {
 		"build": "gulp build",
 		"dist": "gulp dist",
-		"lint": "gulp lint",
+		"lint": "gulp lint && eslint *.js ./build/ --ignore-pattern ./build/vendor/",
 		"run": "gulp run"
 	},
 	"types": "src/types.d.ts",

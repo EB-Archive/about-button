@@ -183,15 +183,6 @@ gulp.task("lint", ["build"], () => {
 			"vendor/*",
 		],
 	}, {shouldExitProgram: false});
-	return gulp.src([
-		"*.js",
-		".*.js",
-		`${BUILD_DIR}**/*.js`,
-		`!${BUILD_DIR}vendor/*`,
-	])
-		.pipe(eslint())
-		.pipe(eslint.format())
-		.pipe(eslint.failAfterError());
 });
 
 gulp.task("dist", ["build"], () => {
