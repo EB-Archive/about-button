@@ -154,7 +154,7 @@ const registerPage = (message, privileged) => {
 	let data = {
 		url:	String(message.url),
 		icon:	String(message.icon ? message.icon : ""),
-		privileged:	Boolean(message.privileged),
+		privileged:	typeof message.privileged === "boolean" ? Boolean(message.privileged) : String(message.privileged),
 		description:	"",
 		alias:	[],
 	};

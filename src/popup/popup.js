@@ -245,7 +245,7 @@ const _reload = async () => {
 					if (!/[a-zA-Z]/.test(strictMaxVersion)) {
 						strictMaxVersion += "\u{10FFFF}";
 					}
-					if (browserInfo.version.localeCompare(strictMaxVersion, [], {numeric: true, caseFirst: "upper"}) > 0) {
+					if (browserInfo.version.localeCompare(strictMaxVersion, [], {numeric: true, caseFirst: "upper"}) >= 0) {
 						return undefined;
 					}
 				}
@@ -253,6 +253,14 @@ const _reload = async () => {
 				let disabled = false;
 				/** @type {string} */
 				const url = page.url.includes(":") ? page.url : defaultScheme + page.url;
+				if (typeof page.privileged === "string") {
+					const GTE = /^\s*>=[\t ]*(\d+(?:.\d+)*)\s*$/;
+					/** @type {RegExpExecArray|string[]} */
+					let result;
+					if ((result = GTE.exec(page.privileged))) {
+						page.privileged = (browserInfo.version.localeCompare(result[1], [], {numeric: true}) >= 0);
+					}
+				}
 				if (page.privileged && !isShimmed(page, url, browserInfo)) {
 					disabled = true;
 					if (!showDisabledButtons)
