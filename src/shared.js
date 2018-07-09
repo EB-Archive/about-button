@@ -20,9 +20,9 @@
 /**
  * Processes all i18n compatible tags on the page.
  *
- * @param	{object} [subData=null] The substitution data to use.
+ * @param	{Record<string,any>} [subData] The substitution data to use.
  */
-const processI18n = async (subData = null) => {
+const processI18n = async (subData = undefined) => {
 	/**
 	 * @param	{HTMLElement} translatable
 	 * @return	{string[]}
@@ -97,6 +97,21 @@ const insertI18n = async (i18n, node) => {
  * @return	{string}	Message localized for the current locale.
  */
 const getMessage = (messageName, substitutions, fallback) => {
+	/**
+	 * Left pads a String.
+	 *
+	 * @param	{string}	string	The string to left pad.
+	 * @param	{number}	[size=0]	The size to expand the string to.
+	 * @param	{string|*}	[c=" "]	The character to use to pad the string.
+	 * @return	{string}	The left padded string.
+	 */
+	const leftPad = (string, size = 0, c = " ") => {
+		c	= String(c);
+		string	= String(string);
+		size	= Number(size) - string.length;
+		return	(size > 0 ? c[0].repeat(size) : "") + string;
+	};
+
 	if (!/^[a-zA-Z0-9_@]+$/.test(messageName)) {
 		// The message needs encoding
 		const regexp = /^[a-zA-Z0-9_@]$/;
@@ -118,19 +133,4 @@ const getMessage = (messageName, substitutions, fallback) => {
 	}
 	const result = browser.i18n.getMessage(messageName, substitutions);
 	return (fallback && (result.length === 0 || result === messageName)) ? fallback : result;
-};
-
-/**
- * Left pads a String.
- *
- * @param	{string}	string	The string to left pad.
- * @param	{number}	[size=0]	The size to expand the string to.
- * @param	{string|*}	[c=" "]	The character to use to pad the string.
- * @return	{string}	The left padded string.
- */
-const leftPad = (string, size = 0, c = " ") => {
-	c	= String(c);
-	string	= String(string);
-	size	= Number(size) - string.length;
-	return	(size > 0 ? c[0].repeat(size) : "") + string;
 };

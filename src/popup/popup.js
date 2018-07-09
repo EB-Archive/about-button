@@ -36,7 +36,7 @@ const isDebug = false;
  */
 const usePagesShim = true;
 
-/** @type {{[browser: string]: string[]}} */
+/** @type {Record<string,string[]>} */
 const pagesShims = {
 	"Firefox": ["about:addons", "about:credits"],
 };
@@ -116,7 +116,7 @@ const i18nInit = async () => {
 		browser.runtime.sendMessage({ method: "getScheme" }),
 	]);
 
-	document.getElementById("main").appendChild(noKnownPages(protocol, true));
+	hyperHTML(document.getElementById("main"))`${noKnownPages(protocol, true)}`;
 	document.getElementById("status-separator").classList.add("hidden");
 
 	return processI18n({
@@ -126,22 +126,16 @@ const i18nInit = async () => {
 
 /**
  * @param	{string}	defaultScheme
- * @param	{boolean}	showDisabledButtons
+ * @param	{boolean}	[showDisabledButtons=true]
  * @return	{HTMLDivElement}
  */
-const noKnownPages = (defaultScheme, showDisabledButtons) => {
-	if (typeof showDisabledButtons === "undefined")
-		showDisabledButtons = true;
-
-	const panel = document.createElement("div");
-	panel.classList.add("panel-section", "panel-section-header");
-
-	const protocol = document.createElement("div");
-	protocol.classList.add("text-section-header");
-	protocol.appendChild(document.createTextNode(getMessage(`popup_unsupported_${showDisabledButtons ? "unknown" : "privilegedOnly"}`, defaultScheme)));
-
-	panel.appendChild(protocol);
-	return panel;
+const noKnownPages = (defaultScheme, showDisabledButtons = true) => {
+	return hyperHTML`
+		<div class="panel-section panel-section-header">
+			<div class="text-section-header">
+				${getMessage(`popup_unsupported_${showDisabledButtons ? "unknown" : "privilegedOnly"}`, defaultScheme)}
+			</div>
+		</div>`;
 };
 
 let reloadCounter = 0;
@@ -176,7 +170,6 @@ const _reload = async () => {
 	const statusContainer	= document.getElementById("status-container");
 	const statusSeparator	= document.getElementById("status-separator");
 
-	status.textContent = "";
 	statusContainer.classList.add("hidden");
 
 	try {
@@ -190,11 +183,11 @@ const _reload = async () => {
 			},
 			browserInfo,
 		] = await Promise.all([
-			browser.runtime.sendMessage({ method: "getPages" }).then(response => {
+			browser.runtime.sendMessage({method: "getPages"}).then(response => {
 				response.showDisabledButtons	= response.showDisabledButtons || false;
 				return response;
 			}),
-			(browser.runtime.getBrowserInfo ? browser.runtime.getBrowserInfo() : {
+			("getBrowserInfo" in browser.runtime ? browser.runtime.getBrowserInfo() : {
 				// Assume running under Google Chrome for now, because the minimum
 				// supported Firefox version supports `browser.runtime.getBrowserInfo()`
 				// and we currently only have code for Mozilla Firefox and Google Chrome.
@@ -207,14 +200,15 @@ const _reload = async () => {
 		]);
 
 		if (!showDisabledButtons) {
-			const statusMessage = document.createElement("div");
-			statusMessage.appendChild(document.createTextNode(getMessage("popup_privilegedHidden")));
-			status.appendChild(statusMessage);
+			hyperHTML(status)`<div>${getMessage("popup_privilegedHidden")}</div>`;
 			statusContainer.classList.remove("hidden");
 		}
 
-		main.textContent = "";
-		for (const category of categories) {
+		/**
+		 * @param {Category} category
+		 * @return {Node|null}
+		 */
+		const remapCategory = category => {
 			/** @type {string} */
 			let categoryName = getMessage(`category_${category.category}`);
 			if (categoryName.length === 0) {
@@ -229,18 +223,21 @@ const _reload = async () => {
 				}
 			}
 			/** @type {HTMLElement} */
-			const header = hyperHTML`
+			const header = hyperHTML(categoryName)`
 				<header class="panel-section panel-section-header">
 					<div class="text-section-header">${categoryName}</div>
 				</header>`;
 
-			/** @type {HTMLElement} */
-			const content = hyperHTML`<section class="panel-section panel-section-list"/>`;
-			for (const page of category.content) {
+			/**
+			 * @param {AboutPage} page
+			 * @return {Node|undefined}
+			 */
+			const remapAboutPages = (page) => {
+				if (!page) return undefined;
 				// Ensure that this page is supported by this browser version
 				if ("strict_min_version" in page) {
 					if (browserInfo.version.localeCompare(page.strict_min_version, [], {numeric: true, caseFirst: "upper"}) < 0) {
-						continue;
+						return undefined;
 					}
 				}
 				if ("strict_max_version" in page) {
@@ -249,7 +246,7 @@ const _reload = async () => {
 						strictMaxVersion += "\u{10FFFF}";
 					}
 					if (browserInfo.version.localeCompare(strictMaxVersion, [], {numeric: true, caseFirst: "upper"}) > 0) {
-						continue;
+						return undefined;
 					}
 				}
 
@@ -259,14 +256,14 @@ const _reload = async () => {
 				if (page.privileged && !isShimmed(page, url, browserInfo)) {
 					disabled = true;
 					if (!showDisabledButtons)
-						continue;
+						return undefined;
 				}
 
 				/** @type {HTMLDivElement} */
 				const button = hyperHTML`
 					<div class="panel-list-item">
 						${generateImg(page.icon)}
-						${createTextElement(url)}
+						<div class="text">${{text: url}}</div>
 					</div>`;
 				if (disabled) {
 					button.dataset.disabled = true;
@@ -325,7 +322,7 @@ const _reload = async () => {
 							const menuitem = hyperHTML`
 								<div class="panel-list-item">
 									${generateImg(value.icon)}
-									${createTextElement(menuitemDescription)}</div>
+									<div class="text">${{text: menuitemDescription}}</div>
 								</div>`;
 							if (disabled) {
 								menuitem.dataset.disabled = true;
@@ -373,38 +370,53 @@ const _reload = async () => {
 				if (title.length > 0) {
 					button.setAttribute("title", title);
 				}
-				content.appendChild(button);
-			}
-			if (content.hasChildNodes()) {
-				main.appendChild(header);
-				main.appendChild(content);
-			}
-		}
-		if (!main.hasChildNodes()) {
+				return button;
+			};
+
+			/** @type {HTMLElement} */
+			const content = hyperHTML`
+				<section class="panel-section panel-section-list">
+					${flatten(category.content.map(remapAboutPages))}
+				</section>`;
+
+			return content.childElementCount > 0
+				? hyperHTML`${header}${content}`
+				: undefined;
+		};
+		hyperHTML(main)`${flatten(categories.map(remapCategory))}`;
+		if (!main.childElementCount) {
 			let pages = 0;
 			categories.forEach(category => (pages += category.content.length || 0));
-			main.appendChild(noKnownPages(defaultScheme, !(!showDisabledButtons && pages > 0)));
+			hyperHTML(main)`${noKnownPages(defaultScheme, !(!showDisabledButtons && pages > 0))}`;
 			statusSeparator.classList.add("hidden");
 		} else {
 			statusSeparator.classList.remove("hidden");
 		}
 	} catch (error) {
-		console.warn(error);
-		const statusMessage = document.createElement("div");
-		statusMessage.appendChild(document.createTextNode(error));
-		status.appendChild(statusMessage);
+		console.error(error);
+		hyperHTML(status)`<div>${error}</div>`;
 		statusContainer.classList.remove("hidden");
 	}
 };
 
 /**
- * Creates a &lt;div class="text"&gt; element containing the supplied text.
- *
- * @param	{string}	text	The text to use.
- * @return	{HTMLDivElement}	The element containing the text node.
+ * Flatten an array
+ * @param {Array<*[]>} array
+ * @return {*[]}
  */
-const createTextElement = (text) => {
-	return hyperHTML`<div class="text">${{text: text}}</div>`;
+const flatten = (array) => {
+	const result = [];
+	const appendRecursive = (array) => {
+		for (const e of array) {
+			if (e instanceof Array) {
+				appendRecursive(e);
+			} else if (typeof e !== "undefined") {
+				result.push(e);
+			}
+		}
+	};
+	appendRecursive(array);
+	return result;
 };
 
 /**

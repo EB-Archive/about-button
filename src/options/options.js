@@ -138,5 +138,7 @@ const i18nInit = async () => {
 		browser.runtime.sendMessage({ method: "getScheme" }),
 	]);
 
-	return processI18n({ protocol });
+	return processI18n({
+		protocol,
+	});
 };

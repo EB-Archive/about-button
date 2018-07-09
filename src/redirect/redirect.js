@@ -16,9 +16,9 @@
  */
 "use strict";
 
-// eslint-disable-next-line valid-jsdoc
-/** @return	{Object<string,string>}
+/**
  * @param	{string}	query
+ * @return	{Record<string,string>}
  */
 function parseQuery(query) {
 	if (!query)
@@ -42,28 +42,10 @@ if ("dest" in query) {
 	try {
 		window.location.href = dest;
 	} catch (e) {
-		document.addEventListener("DOMContentLoaded", () => {
-			document.body.appendChild(document.createTextNode(e));
-		});
+		document.addEventListener("DOMContentLoaded", () => hyperHTML(document.body)`<code>${e}</code>`);
 	}
 } else {
-	document.addEventListener("DOMContentLoaded", () => {
-		/**
-		 * @param	{string}	elementName
-		 * @param	{string}	[text]
-		 * @return	{Element}
-		 */
-		const createTextElement = (elementName, text) => {
-			const element = document.createElement(elementName);
-			if (text !== undefined) {
-				element.appendChild(document.createTextNode(text));
-			}
-			return element;
-		};
-
-		document.body.appendChild(createTextElement("h1", "No redirect destination specified"));
-		document.body.appendChild(document.createTextNode("The redirect destination must be specified using the "));
-		document.body.appendChild(createTextElement("code", "dest"));
-		document.body.appendChild(document.createTextNode(" query."));
-	});
+	document.addEventListener("DOMContentLoaded", () => hyperHTML(document.body)`
+		<h1>No redirect destination specified</h1>
+		<p>The redirect destination must be specified using the <var>dest</var> query parameter.</p>`);
 }
