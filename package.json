@@ -27,7 +27,7 @@
 		"@types/node": "*",
 		"@types/semver": "*",
 		"eslint": "^5.0.1",
-		"fs-extra": "^6.0.1",
+		"fs-extra": "^7.0.0",
 		"gulp": "^3.9.1",
 		"gulp-cli": "^2.0.1",
 		"gulp-delete-lines": "^0.0.7",
